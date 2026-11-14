@@ -32,6 +32,52 @@
       "credit": "NASA/JPL-Caltech",
       "source": {"label": "NASA: Perseverance Captures Dust-Filled Martian Whirlwind", "url": "https://www.nasa.gov/missions/mars-2020-perseverance/perseverance-rover/nasas-perseverance-captures-dust-filled-martian-whirlwind/"},
       "detail": {"label": "PIA26074", "url": "https://www.jpl.nasa.gov/images/pia26074-martian-whirlwind-takes-the-thorofare"}
+    },
+    {
+      "id": "bunsen-peak",
+      "at": "goal",
+      "title": "岩石採取：Bunsen Peak",
+      "lead": "ゴールに到着。管制モードに切り替え、採取する位置に照準を合わせます。",
+      "observed": "実際の観測：2024年3月12日（Sol 1088）、ジェゼロ・クレーターの Bunsen Peak",
+      "media": {
+        "src": "assets/events/bunsen-peak.gif",
+        "still": "assets/events/bunsen-peak-first.png",
+        "durationMs": 4950,
+        "alt": "パーサヴィアランスの前方カメラが撮影した、Bunsen Peakでの岩石コア採取",
+        "note": "前方カメラの実画像33枚・NASA編集の390倍速映像",
+        "zoom": {
+          "x": 38,
+          "y": 73,
+          "window": 0.65
+        }
+      },
+      "sampling": {
+        "tolerance": 5,
+        "complete": "採取成功。炭酸塩とシリカが主体の岩石コアです。どちらも、かつての火星の環境を調べる手がかりになります。"
+      },
+      "facts": [
+        [
+          "試料名",
+          "Comet Geyser（ミッション通算24番目の試料）"
+        ],
+        [
+          "岩石コアの長さ",
+          "5.78 cm"
+        ],
+        [
+          "分類",
+          "シリカで固結した炭酸塩岩"
+        ]
+      ],
+      "credit": "NASA/JPL-Caltech",
+      "source": {
+        "label": "NASAの採取映像（PIA26314）",
+        "url": "https://science.nasa.gov/photojournal/perseverance-cores-bunsen-peak/"
+      },
+      "detail": {
+        "label": "NASAの試料解説",
+        "url": "https://science.nasa.gov/resource/meet-the-mars-samples-comet-geyser-sample-24/"
+      }
     }
   ]
 }

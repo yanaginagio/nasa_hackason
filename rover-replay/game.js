@@ -467,7 +467,7 @@ function hideToast() {
 function buildEvents() {
   const list = plans.map((plan, index) => ({type: "plan", at: plan.at, plan, drive: mission.drives[index]}));
   list.push({type: "accident", at: RULES.accidentAt});
-  list.push(...bigEvents.map((data) => ({type: "big", at: data.at, data})));
+  list.push(...bigEvents.map((data) => ({type: "big", at: data.at === "goal" ? duration : data.at, data})));
   return list.sort((a, b) => a.at - b.at);
 }
 
@@ -681,14 +681,29 @@ function showBigEvent(index) {
     detail.textContent = value;
     return [term, detail];
   }));
-  byId("be-question").textContent = `問題：${data.quiz.question}`;
-  byId("be-choices").replaceChildren(...data.quiz.options.map((option, choice) => {
+  const isSampling = Boolean(data.sampling);
+  const screen = byId("big-event");
+  screen.classList.toggle("be-sampling", isSampling);
+  screen.classList.remove("be-coring", "be-aligned");
+  screen.scrollTop = 0;
+  byId("be-question").hidden = isSampling;
+  byId("be-facts").hidden = isSampling;
+  byId("be-marker").hidden = false;
+  byId("be-reticle").hidden = !isSampling;
+  byId("be-sampling").hidden = !isSampling;
+  byId("be-question").textContent = data.quiz ? `問題：${data.quiz.question}` : "";
+  byId("be-choices").replaceChildren(...(data.quiz?.options ?? []).map((option, choice) => {
     const button = document.createElement("button");
     button.textContent = option.label;
     button.addEventListener("click", () => answerQuiz(index, choice));
     return button;
   }));
   byId("be-message").textContent = "";
+  if (isSampling) {
+    byId("be-aim-x").value = 65;
+    byId("be-aim-y").value = 45;
+    updateSamplingAim();
+  }
   byId("be-sources").replaceChildren(...[data.source, data.detail].map((item) => {
     const anchor = document.createElement("a");
     anchor.href = item.url;
@@ -702,9 +717,66 @@ function showBigEvent(index) {
   main.alt = data.media.alt;
   const layout = () => { fitFrame(data.media.zoom); placeZoom(data.media.zoom); };
   main.onload = zoom.onload = layout;
-  main.src = zoom.src = data.media.src;
+  main.src = data.media.still ?? data.media.src;
+  if (isSampling) zoom.removeAttribute("src");
+  else zoom.src = data.media.src;
+  byId("be-return").textContent = isSampling ? "ミッション結果を見る" : "探査画面に戻る";
   byId("big-event").hidden = false;
   layout();
+}
+
+let samplingTimer;
+let samplingPlayback = 0;
+
+function updateSamplingAim() {
+  const data = events[activeEvent]?.data;
+  if (!data?.sampling) return;
+  const x = Number(byId("be-aim-x").value), y = Number(byId("be-aim-y").value);
+  const target = data.media.zoom;
+  const frame = byId("be-frame");
+  frame.style.setProperty("--aim-x", `${x}%`);
+  frame.style.setProperty("--aim-y", `${y}%`);
+  const aligned = Math.hypot(x - target.x, y - target.y) <= data.sampling.tolerance;
+  byId("be-lock").disabled = !aligned;
+  byId("big-event").classList.toggle("be-aligned", aligned);
+  byId("be-message").textContent = aligned ? "照準が合いました。採取を開始できます。" : "照準を調整中";
+}
+
+function startSampling(event) {
+  event.preventDefault();
+  const form = byId("be-sampling");
+  const data = events[activeEvent]?.data;
+  if (state !== "bigevent" || !data?.sampling || form.hidden || byId("be-lock").disabled) return;
+  form.hidden = true;
+  byId("be-marker").hidden = byId("be-reticle").hidden = true;
+  byId("big-event").classList.add("be-coring");
+  byId("be-message").textContent = "採取中…";
+  const {x, y, durationMs, src, still} = data.media;
+  byId("be-frame").style.setProperty("--be-zoom-origin", `${x}% ${y}%`);
+  const image = byId("be-img");
+  const finish = (message) => {
+    byId("be-message").textContent = message;
+    byId("be-facts").hidden = false;
+    byId("be-return").hidden = false;
+    byId("be-return").focus();
+  };
+  image.onload = () => {
+    samplingTimer = setTimeout(() => finish(data.sampling.complete), durationMs);
+  };
+  image.onerror = () => {
+    image.onload = image.onerror = null;
+    image.src = still;
+    finish("映像を読み込めませんでした。NASAの記録から採取結果を確認できます。");
+  };
+  // Use a new document-local image URL so a replay begins at the first GIF frame.
+  image.src = `${src}?play=${++samplingPlayback}`;
+}
+
+function hideBigEvent() {
+  clearTimeout(samplingTimer);
+  const image = byId("be-img");
+  image.onload = image.onerror = null;
+  byId("big-event").hidden = true;
 }
 
 // Size the frame to the image so the marker's percentages land on the image itself.
@@ -755,7 +827,12 @@ function closeBigEvent() {
   if (state !== "bigevent") return;
   const data = events[activeEvent].data;
   resolved.add(activeEvent);
-  byId("big-event").hidden = true;
+  hideBigEvent();
+  if (data.at === "goal") {
+    end("complete", "ミッション成功",
+      `全区間を完走し、岩石採取イベントを終えました。残り電力 ${Math.ceil(power)}%・判断ミス ${mistakes} 回。`);
+    return;
+  }
   setState("running");
   showStatus("走行中", "次の計画に備えてください。");
   toast("大型イベントの観測を記録", `${data.title}（${data.observed.replace("実際の観測：", "")}）`);
@@ -764,7 +841,7 @@ function closeBigEvent() {
 }
 
 function end(nextState, heading, detail) {
-  byId("big-event").hidden = true;
+  hideBigEvent();
   hideToast();
   setState(nextState);
   cancelAnimationFrame(request);
@@ -815,6 +892,8 @@ start.addEventListener("click", () => {
 });
 
 submit.addEventListener("click", submitAnswer);
+byId("be-sampling").addEventListener("submit", startSampling);
+for (const id of ["be-aim-x", "be-aim-y"]) byId(id).addEventListener("input", updateSamplingAim);
 byId("be-return").addEventListener("click", closeBigEvent);
 byId("toast").addEventListener("click", hideToast);
 window.addEventListener("resize", () => {
@@ -859,7 +938,7 @@ reset.addEventListener("click", () => {
   mmHeading = null;
   toggleMap(false);
   hideToast();
-  byId("big-event").hidden = true;
+  hideBigEvent();
   accidentPick.disabled = false;
   start.disabled = false;
   start.textContent = "走行開始";
