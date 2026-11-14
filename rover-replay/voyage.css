@@ -1,0 +1,175 @@
+/* Prologue: launch, cruise and landing. It reuses the rover screen's parts
+   (top bar, gauge, round minimap, glass HUD, mission card, timeline). */
+body[data-scene="voyage"] .screen { visibility: hidden; }
+body[data-scene="rover"] .voyage { display: none; }
+
+.voyage { position: fixed; inset: 0; z-index: 30; overflow: hidden; background: #020304;
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; padding: 12px 16px; }
+.vg-video, .vg-canvas, .vg-shade { position: absolute; inset: 0; width: 100%; height: 100%; }
+.vg-video { object-fit: cover; z-index: 0; background: #020304; opacity: 0; transition: opacity .5s; }
+.voyage[data-video="on"] .vg-video { opacity: 1; }
+.voyage[data-fit="contain"] .vg-video { object-fit: contain; }
+.vg-canvas { z-index: 1; display: block; touch-action: none; }
+.vg-shade { z-index: 2; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.55) 0, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 62%, rgba(0,0,0,.65) 100%); }
+.voyage[data-pip="on"] .vg-video { inset: auto 16px 96px auto; width: min(300px, 30vw); height: auto; aspect-ratio: 16 / 9; z-index: 4;
+  object-fit: cover; border-radius: 10px; border: 1px solid var(--line); box-shadow: 0 8px 24px rgba(0,0,0,.6); }
+.vg-pip-label { display: none; }
+.voyage[data-pip="on"][data-video="on"] .vg-pip-label { display: block; position: absolute; right: 22px; bottom: calc(96px + min(300px, 30vw) * 9 / 16 + 4px);
+  z-index: 4; font: 11px var(--mono); color: #eaf0df; background: rgba(0,0,0,.6); padding: 2px 8px; border-radius: 999px; }
+
+/* What the viewer is looking at: NASA footage or AI-made graphics (hackathon rule). */
+.vg-badge { display: inline-block; margin-top: 4px; padding: 2px 9px; border-radius: 999px; font: 600 11px/1.5 var(--mono); text-shadow: none; }
+.vg-badge[data-kind="real"] { background: rgba(111,184,255,.18); color: #cfe6ff; border: 1px solid rgba(111,184,255,.5); }
+.vg-badge[data-kind="ai"] { background: rgba(255,187,118,.2); color: #ffe2c2; border: 1px solid rgba(255,187,118,.6); }
+.vg-badge[data-kind="mix"] { background: rgba(184,249,142,.14); color: #e6ffd6; border: 1px solid rgba(184,249,142,.5); }
+.ai-mark { display: inline-block; margin-right: 4px; padding: 0 6px; border-radius: 4px; font: 700 10px/1.6 var(--mono); color: #141813; background: var(--amber); }
+.vg-top, .vg-middle, .vg-dock, .vg-center { position: relative; z-index: 3; }
+.vg-middle, .vg-dock, .vg-center { pointer-events: none; }
+.vg-middle > *, .vg-dock > * { pointer-events: auto; }
+
+/* What each scene shows. */
+.voyage[data-scene="title"] .vg-top, .voyage[data-scene="title"] .vg-middle, .voyage[data-scene="title"] .vg-dock { visibility: hidden; }
+.voyage:not([data-scene="title"]) .vg-intro { display: none; }
+.vg-hull { visibility: hidden; }
+.voyage[data-hull="on"] .vg-hull { visibility: visible; }
+.voyage[data-scene="liftoff"] .vg-orbit, .voyage[data-scene="ascent"] .vg-orbit,
+.voyage[data-scene="arrival"] .vg-orbit, .voyage[data-scene="arrival"] .vg-hud,
+.voyage[data-scene="arrival"] .vg-timeline { visibility: hidden; }
+.voyage[data-scene="landing"] .vg-orbit, .voyage[data-scene="entry"] .vg-orbit,
+.voyage[data-scene="trn"] .vg-orbit, .voyage[data-scene="touchdown"] .vg-orbit { visibility: hidden; }
+
+#vg-hull-bar { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #6fb8ff, var(--sky)); transition: width .25s; }
+.vg-hull[data-level="mid"] #vg-hull-bar { background: linear-gradient(90deg, #d9b847, #f0dd7a); }
+.vg-hull[data-level="low"] #vg-hull-bar { background: linear-gradient(90deg, #d8483a, var(--red)); }
+.vg-hull .power-value { color: var(--sky); }
+.vg-hull[data-level="mid"] .power-value { color: #f0dd7a; }
+.vg-hull[data-level="low"] .power-value { color: #ff9a8e; }
+.vg-hull[data-level="low"] { animation: low-power 1s ease-in-out infinite; }
+.voyage.hit { animation: vg-hit .35s; }
+@keyframes vg-hit { 0% { box-shadow: inset 0 0 0 0 rgba(255,80,60,.0); } 30% { box-shadow: inset 0 0 120px 20px rgba(255,80,60,.55); transform: translate(-5px, 3px); }
+  60% { transform: translate(4px, -3px); } 100% { box-shadow: inset 0 0 0 0 rgba(255,80,60,0); transform: none; } }
+
+.vg-middle { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; min-height: 0; }
+.vg-orbit { cursor: default; margin: 0; }
+.vg-orbit .o-bg { fill: #05080c; }
+.vg-orbit .o-orbit { fill: none; stroke: rgba(234,240,223,.18); stroke-width: .5; }
+.vg-orbit .o-path { fill: none; stroke: rgba(184,249,142,.35); stroke-width: .8; stroke-dasharray: 1.5 1.5; }
+.vg-orbit .o-done { fill: none; stroke: var(--mint); stroke-width: 1.2; }
+.vg-orbit .o-sun { fill: #ffd35c; filter: drop-shadow(0 0 3px #ffb02e); }
+.vg-orbit .o-earth { fill: #6fb8ff; }
+.vg-orbit .o-mars { fill: #e0764a; }
+.vg-orbit .o-craft { fill: #fff; stroke: #10160f; stroke-width: .6; }
+.vg-orbit text { font: 5px var(--mono); fill: #c9d3c0; }
+
+.voyage .vg-hud { width: 300px; grid-template-columns: 1fr; margin-left: auto; }
+.vg-telemetry { display: grid; gap: 6px; }
+.vg-row { padding: 6px 10px; border-radius: 9px; background: rgba(255,255,255,.04); }
+.vg-row span { display: block; font-size: 11px; color: var(--muted); }
+.vg-row b { font: 600 18px/1.3 var(--mono); color: #f2f7ea; }
+.vg-row small { font-size: 11px; color: var(--muted); margin-left: 4px; }
+.vg-row .vg-bar { height: 5px; margin-top: 4px; border-radius: 9px; background: #303c31; overflow: hidden; }
+.vg-row .vg-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #6fb8ff, #e0764a); }
+.vg-phases { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 3px; }
+.vg-phases li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); padding: 3px 6px; border-radius: 6px; }
+.vg-phases li::before { content: ""; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #708272; flex: none; }
+.vg-phases li.done { color: #c9d3c0; }
+.vg-phases li.done::before { background: var(--mint); border-color: var(--mint); }
+.vg-phases li.now { color: #fff; background: rgba(255,187,118,.14); }
+.vg-phases li.now::before { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 0 3px rgba(255,187,118,.3); }
+
+/* Centre overlays: countdown, captions, subtitles, the arrival title. */
+.vg-center { position: absolute; inset: 0; display: grid; place-items: center; z-index: 4; }
+.vg-count { font-size: clamp(90px, 18vw, 220px); font-weight: 700; color: #fff; text-shadow: 0 0 30px rgba(255,187,118,.7), 0 4px 12px #000;
+  animation: vg-pop .9s ease-out; }
+.vg-count.go { font-size: clamp(56px, 10vw, 130px); color: var(--amber); letter-spacing: .08em; }
+@keyframes vg-pop { 0% { transform: scale(1.6); opacity: 0; } 20% { transform: scale(1); opacity: 1; } 100% { transform: scale(.94); opacity: .9; } }
+.vg-caption { position: absolute; top: 22%; left: 50%; transform: translateX(-50%); width: min(820px, 92vw); text-align: center;
+  font-size: clamp(20px, 2.6vw, 32px); font-weight: 700; color: #fff; text-shadow: 0 2px 10px #000, 0 0 2px #000; animation: rise .4s ease-out; }
+.vg-caption small { display: block; margin-top: 4px; font: 500 clamp(12px, 1.2vw, 15px)/1.5 var(--mono); color: #d8e2cf; }
+.vg-sub { position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%); width: min(900px, 92vw); text-align: center;
+  font-size: clamp(16px, 1.7vw, 21px); line-height: 1.5; color: #fff; padding: 6px 14px; border-radius: 8px; background: rgba(0,0,0,.62); }
+.vg-sub i { display: block; font: 12px/1.4 var(--mono); font-style: normal; color: #b9c4b0; }
+.voyage[data-scene="arrival"] .vg-caption { top: auto; font-size: clamp(54px, 9vw, 120px); letter-spacing: .06em; color: var(--mint);
+  text-shadow: 0 0 40px rgba(184,249,142,.55), 0 4px 18px #000; animation: vg-arrive 1.2s cubic-bezier(.2,.9,.3,1.2); }
+.voyage[data-scene="arrival"] .vg-caption small { font-size: clamp(14px, 1.5vw, 19px); letter-spacing: 0; color: #eaf0df; }
+@keyframes vg-arrive { 0% { transform: translateX(-50%) scale(.6); opacity: 0; filter: blur(8px); } 100% { transform: translateX(-50%); opacity: 1; filter: none; } }
+.voyage[data-scene="arrival"] .vg-video { animation: vg-zoom 4s ease-out forwards; }
+@keyframes vg-zoom { from { transform: scale(1.12); } to { transform: none; } }
+.voyage.leaving { animation: vg-leave .9s ease-in forwards; }
+@keyframes vg-leave { to { opacity: 0; } }
+.voyage[data-scene="arrival"] .vg-arrival-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; animation: vg-zoom 4s ease-out forwards; }
+
+.vg-card { --kind: var(--sky); width: min(980px, 100%); }
+.vg-card[data-kind="warn"] { --kind: var(--red); }
+.vg-card[data-kind="warn"] h2 { color: #ffb2a8; }
+.vg-card[data-kind="ok"] { --kind: var(--mint); }
+.vg-card[data-kind="fail"] { --kind: var(--red); }
+.vg-card #vg-message { font-size: 15px; line-height: 1.6; }
+.vg-note { font-size: 13px; line-height: 1.55; color: #ffe2c2; padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--amber); background: rgba(255,187,118,.08); }
+.vg-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.vg-src { font-size: 11px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.voyage[data-playing="dodge"] .vg-card { opacity: .82; }
+.voyage[data-playing="dodge"] .vg-card #vg-message, .voyage[data-playing="dodge"] .vg-card .vg-note,
+.voyage[data-playing="dodge"] .vg-card .facts, .voyage[data-playing="dodge"] .vg-card .vg-src { display: none; }
+.voyage[data-playing="dodge"] .vg-card { padding-block: 8px; gap: 4px; }
+.voyage[data-playing="dodge"] .vg-card h2 { font-size: 18px; }
+.vg-timeline .tm.event { background: var(--red); border-radius: 50%; }
+.vg-timeline .tm.land { background: var(--amber); border-radius: 2px; transform: rotate(45deg); }
+
+/* Title */
+.vg-intro { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; overflow-y: auto;
+  background: radial-gradient(ellipse at 70% 30%, rgba(224,118,74,.18), transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(111,184,255,.12), transparent 50%); }
+.vg-intro-card { width: min(760px, 100%); padding: 26px 30px 22px; display: grid; gap: 14px; animation: rise .5s ease-out; }
+.vg-logo { font-size: clamp(34px, 5vw, 56px); line-height: 1.05; letter-spacing: .01em;
+  background: linear-gradient(90deg, #fff 10%, #ffbb76 60%, #e0764a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.vg-lead { font-size: 16px; line-height: 1.7; color: #dfe7d6; }
+.vg-chapters { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; counter-reset: ch; }
+.vg-chapters li { counter-increment: ch; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.05); border: 1px solid var(--line); display: grid; gap: 2px; }
+.vg-chapters li::before { content: "0" counter(ch); font: 700 11px var(--mono); color: var(--amber); }
+.vg-chapters b { font-size: 15px; }
+.vg-chapters span { font-size: 11px; line-height: 1.45; color: var(--muted); }
+.vg-intro-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.vg-intro-actions .primary { font-size: 17px; padding: 10px 26px; min-height: 48px; }
+.vg-intro-note { font-size: 12px; }
+
+@media (max-height: 860px) and (min-width: 781px) {
+  .voyage .vg-hud { width: 270px; padding: 8px 10px; }
+  .vg-row { padding: 4px 8px; }
+  .vg-row b { font-size: 16px; }
+  .vg-orbit { width: clamp(140px, 13vw, 190px); }
+  .vg-sub { bottom: 120px; }
+}
+@media (max-width: 780px) {
+  .voyage[data-pip="on"] .vg-video { width: 40vw; bottom: 150px; right: 10px; }
+  .voyage[data-pip="on"][data-video="on"] .vg-pip-label { display: none; }
+  /* The rover screen's phone rules reorder .topbar/.hud/.minimap/.dock; undo that here. */
+  .voyage > *, .voyage .hud, .voyage .minimap, .voyage .dock, .voyage .topbar { order: 0; }
+  .voyage { padding: 10px 12px; gap: 6px; }
+  .vg-top { grid-template-columns: 1fr auto; gap: 6px 8px; }
+  .vg-top .brand { grid-column: 1; grid-row: 1; }
+  .vg-top .eyebrow { display: none; }
+  .vg-top .brand h1 { font-size: 15px; }
+  .vg-top .top-right { grid-column: 2; grid-row: 1; justify-items: end; gap: 4px; }
+  .vg-top .pill { font-size: 10px; padding: 3px 8px; }
+  .vg-top .buttons button { min-height: 34px; padding: 4px 9px; font-size: 13px; }
+  .vg-hull { grid-column: 1 / -1; grid-row: 2; width: 100%; padding: 4px 10px 3px; }
+  .vg-hull .power-value { font-size: 18px; }
+  .vg-hull .power-note { display: none; }
+  .vg-middle { align-items: flex-start; }
+  .vg-orbit { width: 104px; }
+  .voyage .vg-hud { width: 168px; margin-left: auto; max-height: none; padding: 6px 8px; gap: 4px; }
+  .voyage .minimap { align-self: flex-start; }
+  .vg-hud .hud-head span, .vg-row small { display: none; }
+  .vg-row { padding: 3px 6px; }
+  .vg-row:nth-child(n+4) { display: none; }
+  .vg-row b { font-size: 13px; }
+  .vg-phases li { font-size: 11px; padding: 1px 4px; }
+  .vg-chapters { grid-template-columns: 1fr 1fr; }
+  .vg-card { max-height: 34vh; padding: 10px 12px; }
+  .vg-card h2 { font-size: 17px; }
+  .vg-card .keys { display: none; }
+  .vg-sub { bottom: 96px; font-size: 14px; }
+  .vg-caption { top: 30%; }
+  .vg-intro-card { padding: 18px; }
+}

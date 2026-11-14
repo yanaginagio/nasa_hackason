@@ -6,9 +6,102 @@
   <meta name="description" content="Perseveranceの実画像と走行データで遊ぶ火星探査シミュレーション">
   <title>Jezero Traverse | 火星探査シミュレーション</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="voyage.css">
+  <link rel="stylesheet" href="result.css">
   <script src="game.js" type="module"></script>
+  <script src="voyage.js" type="module"></script>
 </head>
-<body>
+<body data-scene="voyage">
+  <!-- Prologue: launch, cruise and landing, before the rover drives. -->
+  <section id="voyage" class="voyage" data-scene="title" aria-label="打ち上げから着陸まで">
+    <video id="vg-video" class="vg-video" playsinline preload="auto"></video>
+    <canvas id="vg-canvas" class="vg-canvas" aria-hidden="true"></canvas>
+    <span class="vg-pip-label">実際の映像（同じ時間帯・NASA）</span>
+    <div class="vg-shade" aria-hidden="true"></div>
+
+    <header class="topbar vg-top">
+      <div class="brand"><span class="planet" aria-hidden="true"></span><div>
+        <p class="eyebrow">MARS 2020 / PERSEVERANCE</p><h1 id="vg-chapter">火星への旅</h1>
+        <p id="vg-badge" class="vg-badge" data-kind="ai">AI生成のCG（実写ではありません）</p>
+      </div></div>
+
+      <div id="vg-hull" class="power vg-hull" data-level="ok" role="meter" aria-label="機体の状態" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+        <div class="power-head"><span class="power-label">機体の状態</span><span id="vg-hull-value" class="mono power-value">100%</span></div>
+        <div class="power-track" aria-hidden="true"><span id="vg-hull-bar"></span></div>
+        <span id="vg-hull-note" class="mono power-note">赤（危険）・黄（注意）の上にいると減ります</span>
+        <span id="vg-hull-float" class="power-float mono" aria-hidden="true"></span>
+      </div>
+
+      <div class="top-right">
+        <p class="pill mono"><span id="vg-clock">2020-07-30 11:50 UTC</span> · <span id="vg-day">打ち上げ前</span></p>
+        <div class="buttons">
+          <button id="vg-sound" class="icon-btn" aria-pressed="true" title="音のオン・オフ">音 オン</button>
+          <button id="vg-speed" class="icon-btn" hidden title="再生の速さ（×1・×2・×4）">×1</button>
+          <button id="vg-skip" title="この場面を飛ばす">スキップ ▶▶</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="vg-middle">
+      <figure class="minimap vg-orbit" aria-label="太陽系の中の探査機の位置">
+        <svg id="vg-orbit" viewBox="-50 -50 100 100" aria-hidden="true"></svg>
+        <figcaption class="minimap-label mono"><span id="vg-orbit-label">地球 → 火星</span></figcaption>
+      </figure>
+
+      <section class="glass hud vg-hud" aria-labelledby="vg-hud-title">
+        <header class="hud-head"><h2 id="vg-hud-title">探査機の状態</h2><span id="vg-hud-src" class="muted">JPL Horizons</span></header>
+        <div id="vg-telemetry" class="vg-telemetry"></div>
+        <ol id="vg-phases" class="vg-phases" hidden></ol>
+      </section>
+    </div>
+
+    <div class="vg-center" aria-live="polite">
+      <p id="vg-count" class="vg-count mono" hidden></p>
+      <p id="vg-caption" class="vg-caption" hidden></p>
+      <p id="vg-sub" class="vg-sub" hidden></p>
+    </div>
+
+    <div class="dock vg-dock">
+      <section id="vg-card" class="glass controls vg-card" data-kind="info" aria-labelledby="vg-title" hidden>
+        <div class="card-head">
+          <span id="vg-kind" class="kind mono">MISSION CONTROL</span>
+          <span id="vg-timer" class="mono clock"></span>
+        </div>
+        <h2 id="vg-title">—</h2>
+        <p id="vg-message"></p>
+        <dl id="vg-facts" class="facts" hidden></dl>
+        <p id="vg-note" class="vg-note" hidden></p>
+        <div id="vg-actions" class="vg-actions" hidden></div>
+        <div class="card-foot"><span id="vg-src" class="vg-src"></span><span class="keys mono">← → ↑ ↓・マウス・指：移動　Space：一時停止</span></div>
+      </section>
+      <div class="timeline vg-timeline" aria-hidden="true">
+        <progress id="vg-progress" value="0" max="1"></progress>
+        <div id="vg-marks" class="timeline-marks"></div>
+      </div>
+    </div>
+
+    <!-- Title: the whole story and the start buttons. -->
+    <div id="vg-intro" class="vg-intro">
+      <div class="vg-intro-card glass">
+        <p class="eyebrow">MARS 2020 / PERSEVERANCE · 2020-2024</p>
+        <h1 class="vg-logo">Jezero Traverse</h1>
+        <p class="vg-lead">2020年7月30日、ケープカナベラル。探査車パーサヴィアランスを載せたロケットが、火星へ向けて飛び立ちます。NASA の実際の映像と記録で、打ち上げから岩石の採取までをたどります。</p>
+        <ol class="vg-chapters">
+          <li><b>打ち上げ</b><span>実際の発射映像</span></li>
+          <li><b>火星への航行</b><span>203日・4億7千万 km</span></li>
+          <li><b>着陸</b><span>実際の危険度マップで、崖や岩をよけて降りる</span></li>
+          <li><b>探査</b><span>データで走行を計画する</span></li>
+          <li><b>採取</b><span>ゴールで岩石を採る</span></li>
+        </ol>
+        <div class="vg-intro-actions">
+          <button id="vg-begin" class="primary" disabled>データを読み込み中…</button>
+          <button id="vg-to-rover">探査から始める</button>
+        </div>
+        <p class="vg-intro-note muted">映像・軌道・危険度マップ・小惑星・太陽フレア・デブリの数は NASA の記録です。<b class="ai-mark">AI生成</b> 探査機や宇宙の絵（CG）・祝福の演出・効果音は AI（Claude）が作ったもので、実写ではありません。画面左上に、いま見ているものが実写か CG かを表示します。</p>
+      </div>
+    </div>
+  </section>
+
   <div class="screen" data-mode="panel">
     <img id="photo" class="backdrop" alt="Perseveranceの左Navcamが撮影した火星の地表">
 
@@ -143,7 +236,7 @@
       </div>
 
       <footer class="sources">
-        <span>実画像・走行線・傾き・時刻・日照・音は NASA の記録。判断の基準値と電力はゲーム用の設定。時間はデモ用に圧縮。</span>
+        <span>実画像・走行線・傾き・時刻・日照・音は NASA の記録。判断の基準値と電力はゲーム用の設定。時間はデモ用に圧縮。<b class="ai-mark">AI生成</b> 図・アイコン・CG・効果音は AI（Claude）が作成。</span>
         <nav aria-label="データ出典">
           <a href="https://mars.nasa.gov/mars2020/multimedia/raw-images/">NASA Navcam</a>
           <a href="https://science.nasa.gov/mission/mars-2020-perseverance/location-map/">JPL 走行線</a>
@@ -199,6 +292,40 @@
         </div>
         </div>
         <figure class="be-zoom"><span class="be-zoom-view"><img id="be-zoom-img" alt=""></span><figcaption>丸印のあたりを拡大</figcaption></figure>
+      </div>
+    </div>
+  </section>
+  <!-- Mission report: score, review, celebration. -->
+  <section id="result" class="result" aria-labelledby="rs-title" hidden>
+    <canvas id="rs-fx" class="rs-fx" aria-hidden="true"></canvas>
+    <div class="rs-body">
+      <header class="rs-head">
+        <p class="eyebrow">MISSION REPORT</p>
+        <h2 id="rs-title">MISSION COMPLETE</h2>
+        <p id="rs-sub" class="rs-sub"></p>
+        <p id="rs-fx-note" class="rs-fx-note"><b class="ai-mark">AI生成</b>紙吹雪と花火は AI が作った CG の演出です</p>
+      </header>
+      <div class="rs-score glass">
+        <div id="rs-rank" class="rs-rank" aria-label="ランク">S</div>
+        <div class="rs-total">
+          <p class="rs-points"><b id="rs-points" class="mono">0</b><span class="mono"> / <span id="rs-max">0</span> 点</span></p>
+          <p id="rs-comment" class="rs-comment"></p>
+        </div>
+      </div>
+      <section class="rs-section glass">
+        <h3>内訳</h3>
+        <ul id="rs-breakdown" class="rs-breakdown"></ul>
+        <p class="rs-note muted">点数の付け方はゲーム用の設定です（1回目で正解ほど高い・残りの電力・着陸の結果）。</p>
+      </section>
+      <section class="rs-section glass">
+        <h3>復習</h3>
+        <p id="rs-review-note" class="muted"></p>
+        <div id="rs-review" class="rs-review"></div>
+      </section>
+      <div class="rs-actions">
+        <button id="rs-retry" class="primary">もう一度探査する</button>
+        <button id="rs-restart">打ち上げから遊ぶ</button>
+        <button id="rs-close">閉じる</button>
       </div>
     </div>
   </section>
