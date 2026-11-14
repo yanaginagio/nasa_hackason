@@ -78,7 +78,3 @@ python3 -m http.server 8417 --bind 127.0.0.1 --directory rover-replay
 - [NASA/JPLのMMGIS走行線](https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json)から対象の3区間を使います。ピンは撮影地点の間を走行線に沿って補間します。画像は6秒間隔で切り替わります。
 - 背景は[NASA Mars TrekのJezero HiRISE WMTS](https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars)です。必要な2タイルを保存し、WMTSのタイルグリッドで走行線と位置を合わせています。
 - 判断の基準値（傾き3°、LMST 15:30）・選択肢・電力の増減はゲーム用の設定です。アクシデントの出来事と対応策は実際の事例で、出典を `assets/accidents.json` に入れてあります。ゲームでは Perseverance に起きたものとして出題します。Sol 23 の判断では、計画を送る時刻の代わりに走行開始の時刻を使っています。
-
-## オポチュニティの単発Event
-
-トップの「Eventを遊ぶ」から、太陽光パネルの自然清掃とDiamond Jennessの岩石研磨を体験できます。
