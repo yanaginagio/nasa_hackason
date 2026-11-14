@@ -19,3 +19,8 @@ python3 -m http.server 8417 --bind 127.0.0.1 --directory rover-replay
 - [NASA/JPLのMMGIS走行線](https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json)から対象の3区間を使います。ピンは撮影地点の間を走行線に沿って補間します。画像は6秒間隔で切り替わります。
 - 背景は[NASA Mars TrekのJezero HiRISE WMTS](https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars)です。必要な2タイルを保存し、WMTSのタイルグリッドで走行線と位置を合わせています。
 - 通信不安定と車輪の滑りはゲーム用の創作です。
+
+## Event試作
+
+トップの「Eventを遊ぶ」または http://localhost:8417/events/ から開きます。
+2014年のOpportunityの自然清掃を題材に、予測・原因推理・証拠選び・時系列・電力配分の5形式を試せます。電力配分の費用はゲーム用の仮設定です。画像はNASA/JPLのPIA17759とPIA18079を同梱しています。
