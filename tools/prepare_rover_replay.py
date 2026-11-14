@@ -11,6 +11,8 @@ import xml.etree.ElementTree as ET
 
 ASSETS = Path(__file__).resolve().parents[1] / "rover-replay" / "assets"
 PHOTOS = "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/browse/sol"
+# PDS4 labels of the same raw products: local solar time, sun angles, temperatures, downlink time.
+LABELS = "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol"
 TRAVERSE = "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json"
 PLACES = ("https://pds-geosciences.wustl.edu/m2020/"
           "urn-nasa-pds-mars2020_rover_places/data_localizations/best_interp.csv")
@@ -33,6 +35,48 @@ def fetch(url, limit=4_000_000):
     if len(data) > limit:
         raise ValueError(f"Download exceeds limit: {url}")
     return data
+
+
+SECONDS_PER_SOL = 88_775.244  # one Mars solar day in SI seconds (24 LMST hours)
+ARM_JOINTS = ("AZIMUTH JOINT", "ELEVATION JOINT", "ELBOW JOINT", "WRIST JOINT", "TURRET JOINT")
+
+
+def parse_label(data):
+    """Read the environment of one Navcam image from its PDS4 label."""
+    root = ET.fromstring(data)
+    for node in root.iter():
+        node.tag = node.tag.rsplit("}", 1)[-1]
+    sun = None
+    for geometry in root.iter("Derived_Geometry"):
+        frame = geometry.findtext(".//local_identifier_reference") or ""
+        if frame.startswith("SITE_FRAME"):  # north-referenced, local level
+            sun = (float(geometry.findtext("solar_elevation")),
+                   float(geometry.findtext("solar_azimuth")))
+    temperatures = {}
+    for index in root.iter("Device_Temperature_Index"):
+        temperatures[index.findtext("index_id")] = float(index.findtext("index_value_temperature"))
+    if sun is None or "NAVCAM LEFT CAMERA PLATE" not in temperatures:
+        raise ValueError("Label lacks site-frame sun angles or Navcam temperature")
+    return {
+        "utc": root.findtext(".//start_date_time"),
+        "earthReceived": root.findtext(".//earth_received_start_date_time"),
+        "lmst": root.findtext(".//local_mean_solar_time"),
+        "ltst": root.findtext(".//local_true_solar_time"),
+        "sunElevation": sun[0],
+        "sunAzimuth": sun[1],
+        "navcamTempC": temperatures["NAVCAM LEFT CAMERA PLATE"],
+        "armTempC": {name: temperatures[name] for name in ARM_JOINTS if name in temperatures},
+    }
+
+
+def clock_seconds(text):
+    hours, minutes, seconds = text.split(":")
+    return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+
+
+def clock_text(seconds):
+    seconds = round(seconds) % 86_400
+    return f"{seconds // 3600:02}:{seconds // 60 % 60:02}:{seconds % 60:02}"
 
 
 def save_png(entry):
@@ -145,13 +189,66 @@ def main():
     if any(a["sclk"] >= b["sclk"] or a["distance"] >= b["distance"]
            for a, b in zip(frames, frames[1:])):
         raise ValueError("Frames must advance in capture time and route distance")
+
+    # Environment at each image, from the image's own PDS4 label.
+    label_urls = [f"{LABELS}/{sol:05}/ids/edr/ncam/{name[:-4]}.xml" for sol, _, name in FRAMES]
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        labels = [parse_label(data) for data in pool.map(fetch, label_urls)]
+    for frame, env, url in zip(frames, labels, label_urls):
+        frame["env"] = env
+        frame["labelUrl"] = url
+
+    def lmst_at(sol, sclk):
+        # SCLK counts SI seconds; convert the offset from an image of the same sol to LMST.
+        ref = next(f for f in frames if f["sol"] == sol)
+        offset = (sclk - ref["sclk"]) * 86_400 / SECONDS_PER_SOL
+        return clock_text(clock_seconds(ref["env"]["lmst"]) + offset)
+
+    # Rover attitude at every traverse vertex. The JPL traverse is drawn through the PLACES
+    # drive positions, so the two lists must line up one to one; stop if they do not.
+    poses = sorted((row for row in places if row["frame"] == "ROVER" and row["site"] == "3"
+                    and FRAMES[0][1] <= int(row["drive"]) <= FRAMES[-1][1]),
+                   key=lambda row: int(row["drive"]))
+    if len(poses) != len(path):
+        raise ValueError(f"PLACES has {len(poses)} poses but the traverse has {len(path)} vertices")
+    worst = max(math.dist(metric(p), metric(project(float(r["longitude"]),
+                                                    float(r["planetocentric_latitude"]))))
+                for p, r in zip(path, poses)) * metres_per_pixel_y
+    if worst > 0.5:
+        raise ValueError(f"PLACES poses are {worst:.2f} m away from the traverse vertices")
+    base_elevation = float(poses[0]["elevation"])
+    pose_data = [{
+        "drive": int(r["drive"]), "sol": int(r["sol"]), "sclk": int(r["sclk"]),
+        "lmst": lmst_at(int(r["sol"]), int(r["sclk"])),
+        "pitch": float(r["pitch"]), "roll": float(r["roll"]), "yaw": float(r["yaw"]),
+        "elevationM": round(float(r["elevation"]) - base_elevation, 3),
+    } for r in poses]
+
+    # One entry per sol of driving: the rows after the first image's drive up to the next image.
+    drives = []
+    for first, last in [(386, 578), (578, 770), (770, 792)]:
+        rows = [p for p, d in zip(pose_data, distance) if first < p["drive"] <= last]
+        moved = [d for p, d in zip(pose_data, distance) if first <= p["drive"] <= last]
+        steepest = max(rows, key=lambda p: max(abs(p["pitch"]), abs(p["roll"])))
+        drives.append({
+            "fromDrive": first, "toDrive": last, "sol": rows[0]["sol"],
+            "startSclk": rows[0]["sclk"], "endSclk": rows[-1]["sclk"],
+            "startLmst": rows[0]["lmst"], "endLmst": rows[-1]["lmst"],
+            "lengthM": round((moved[-1] - moved[0]) * metres_per_pixel_y, 3),
+            "climbM": round(rows[-1]["elevationM"] - next(
+                p["elevationM"] for p in pose_data if p["drive"] == first), 3),
+            "steepest": {"drive": steepest["drive"], "pitch": steepest["pitch"],
+                         "roll": steepest["roll"]},
+        })
     with ThreadPoolExecutor(max_workers=6) as pool:
         list(pool.map(save_png, [(a["url"], a["name"]) for a in frames + tiles]))
 
     data = {"frames": frames, "tiles": tiles, "width": width, "height": height,
             "scale20m": round(20 / (metres_per_pixel_y * longitude_scale), 3),
             "route": [local(p) + [round(d * metres_per_pixel_y, 3)] for p, d in zip(path, distance)],
-            "sources": {"traverse": TRAVERSE, "places": PLACES, "wmts": TILES + "/WMTSCapabilities.xml"}}
+            "poses": pose_data, "drives": drives,
+            "sources": {"traverse": TRAVERSE, "places": PLACES, "wmts": TILES + "/WMTSCapabilities.xml",
+                        "labels": LABELS}}
     (ASSETS / "mission.json").write_text(json.dumps(data, indent=2) + "\n")
     print(f"Saved {len(frames)} Navcam images, {len(tiles)} HiRISE tiles, and {len(path)} traverse vertices.")
 

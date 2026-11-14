@@ -1,0 +1,37 @@
+{
+  "note": "大型イベント。ミッション（走行計画・アクシデント）とは別に、探査画面から専用の画面へ切り替えて見せる実際の観測。数値は出典の記事どおり。",
+  "events": [
+    {
+      "id": "dust-devil",
+      "at": 7,
+      "title": "ダストデビル（つむじ風）発生",
+      "lead": "遠くの尾根で、砂ぼこりを巻き上げるつむじ風を Navcam がとらえました。",
+      "observed": "実際の観測：2023年8月30日（Sol 899）、ジェゼロ・クレーター西の縁「Thorofare Ridge」",
+      "media": {
+        "src": "assets/events/dust-devil-sol899.gif",
+        "alt": "Perseverance の Navcam が撮影した、遠くの尾根の上を動くつむじ風",
+        "note": "21コマ・4秒おきの撮影を20倍速で再生（画質は強調済み）",
+        "zoom": {"x": 55.6, "y": 8, "window": 0.125}
+      },
+      "facts": [
+        ["ローバーからの距離", "約 4 km"],
+        ["動く速さ", "約 19 km/h（東から西へ）"],
+        ["幅", "約 60 m"],
+        ["画像に写っている高さ", "下の部分の約 118 m"]
+      ],
+      "quiz": {
+        "question": "てっぺんは画像の外にあります。全体の高さ（約 2 km）は、何から見積もったでしょう？",
+        "options": [
+          {"label": "地面に落ちた影の長さ", "hint": ""},
+          {"label": "てっぺんまで写るように撮り直した画像", "hint": "撮り直してはいません。写っているのは下の約 118 m だけです。"},
+          {"label": "ローバーのレーダーで測った", "hint": "Perseverance には、つむじ風の高さを測るレーダーはありません。画像の中に手がかりがあります。"}
+        ],
+        "correct": 0,
+        "answer": "つむじ風が地面に落とす影の長さから見積もりました。まっすぐな柱だと仮定すると、高さは約 2 km になります。"
+      },
+      "credit": "NASA/JPL-Caltech",
+      "source": {"label": "NASA: Perseverance Captures Dust-Filled Martian Whirlwind", "url": "https://www.nasa.gov/missions/mars-2020-perseverance/perseverance-rover/nasas-perseverance-captures-dust-filled-martian-whirlwind/"},
+      "detail": {"label": "PIA26074", "url": "https://www.jpl.nasa.gov/images/pia26074-martian-whirlwind-takes-the-thorofare"}
+    }
+  ]
+}
