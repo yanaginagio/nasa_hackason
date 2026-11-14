@@ -175,7 +175,7 @@
         <p id="be-lead" class="be-lead">—</p>
       </header>
       <figure class="be-media">
-        <div id="be-frame" class="be-frame"><img id="be-img" alt=""><span id="be-marker" class="be-marker" aria-hidden="true"></span></div>
+        <div id="be-frame" class="be-frame"><img id="be-img" alt=""><span id="be-marker" class="be-marker" aria-hidden="true"></span><span id="be-reticle" aria-hidden="true" hidden></span></div>
         <figcaption><span id="be-note">—</span> · <span id="be-credit">—</span></figcaption>
       </figure>
       <div class="be-panel glass">
@@ -184,6 +184,14 @@
         <dl id="be-facts" class="facts"></dl>
         <p id="be-question" class="be-question">—</p>
         <div id="be-choices" class="choices"></div>
+        <form id="be-sampling" hidden>
+          <p>黄色い円と照準が重なるよう、右・左と上・下の位置を調整します。</p>
+          <div class="be-alignment">
+            <label>横の位置 <input id="be-aim-x" type="range" min="0" max="100" value="65"></label>
+            <label>縦の位置 <input id="be-aim-y" type="range" min="0" max="100" value="45"></label>
+          </div>
+          <button class="primary" type="submit" id="be-lock" disabled>照準を固定して採取</button>
+        </form>
         <p id="be-message" class="be-message" role="status"></p>
         <div class="be-foot">
           <span id="be-sources" class="be-sources"></span>
