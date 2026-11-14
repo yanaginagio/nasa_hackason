@@ -11,7 +11,24 @@
       "lon": 77.451034032,
       "lat": 18.445135052,
       "distance": 0.0,
-      "routeOffsetM": 0.0
+      "routeOffsetM": 0.0,
+      "env": {
+        "utc": "2021-03-06T07:19:26.334Z",
+        "earthReceived": "2021-03-06T16:04:26.250Z",
+        "lmst": "16:34:02.229",
+        "ltst": "16:01:19",
+        "sunElevation": 29.8483,
+        "sunAzimuth": 265.643,
+        "navcamTempC": -20.253,
+        "armTempC": {
+          "AZIMUTH JOINT": -29.9112,
+          "ELEVATION JOINT": -30.8312,
+          "ELBOW JOINT": -24.3917,
+          "WRIST JOINT": -27.3721,
+          "TURRET JOINT": -27.2985
+        }
+      },
+      "labelUrl": "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol/00015/ids/edr/ncam/NLF_0015_0668287065_553ECM_N0030386NCAM03001_01_195J03.xml"
     },
     {
       "name": "NLF_0016_0668366769_902ECM_N0030548NCAM00301_01_295J03.png",
@@ -24,7 +41,24 @@
       "lon": 77.451412918,
       "lat": 18.445251612,
       "distance": 22.404,
-      "routeOffsetM": 0.0
+      "routeOffsetM": 0.0,
+      "env": {
+        "utc": "2021-03-07T05:27:51.312Z",
+        "earthReceived": "2021-03-07T07:19:10.410Z",
+        "lmst": "14:06:54.644",
+        "ltst": "13:34:31",
+        "sunElevation": 63.593,
+        "sunAzimuth": 243.733,
+        "navcamTempC": -17.3781,
+        "armTempC": {
+          "AZIMUTH JOINT": -27.6872,
+          "ELEVATION JOINT": -25.1185,
+          "ELBOW JOINT": -17.1008,
+          "WRIST JOINT": -16.2366,
+          "TURRET JOINT": -34.6705
+        }
+      },
+      "labelUrl": "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol/00016/ids/edr/ncam/NLF_0016_0668366769_902ECM_N0030548NCAM00301_01_295J03.xml"
     },
     {
       "name": "NLF_0016_0668369874_474ECM_N0030578NCAM00304_01_195J03.png",
@@ -37,7 +71,24 @@
       "lon": 77.451497262,
       "lat": 18.445279903,
       "distance": 27.434,
-      "routeOffsetM": 0.0
+      "routeOffsetM": 0.0,
+      "env": {
+        "utc": "2021-03-07T06:19:35.909Z",
+        "earthReceived": "2021-03-07T07:19:14.722Z",
+        "lmst": "14:57:16.175",
+        "ltst": "14:24:53",
+        "sunElevation": 52.4219,
+        "sunAzimuth": 254.606,
+        "navcamTempC": -16.4191,
+        "armTempC": {
+          "AZIMUTH JOINT": -25.7792,
+          "ELEVATION JOINT": -24.8007,
+          "ELBOW JOINT": -19.3221,
+          "WRIST JOINT": -18.786,
+          "TURRET JOINT": -30.5064
+        }
+      },
+      "labelUrl": "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol/00016/ids/edr/ncam/NLF_0016_0668369874_474ECM_N0030578NCAM00304_01_195J03.xml"
     },
     {
       "name": "NLF_0020_0668725702_677ECM_N0030704NCAM00301_01_295J03.png",
@@ -50,7 +101,24 @@
       "lon": 77.451731313,
       "lat": 18.445246838,
       "distance": 41.734,
-      "routeOffsetM": 0.0
+      "routeOffsetM": 0.0,
+      "env": {
+        "utc": "2021-03-11T09:10:06.917Z",
+        "earthReceived": "2021-03-11T14:37:37.188Z",
+        "lmst": "15:09:06.674",
+        "ltst": "14:38:09",
+        "sunElevation": 49.678,
+        "sunAzimuth": 257.795,
+        "navcamTempC": -16.0994,
+        "armTempC": {
+          "AZIMUTH JOINT": -26.7334,
+          "ELEVATION JOINT": -25.7539,
+          "ELBOW JOINT": -20.9075,
+          "WRIST JOINT": -20.0598,
+          "TURRET JOINT": -29.8652
+        }
+      },
+      "labelUrl": "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol/00020/ids/edr/ncam/NLF_0020_0668725702_677ECM_N0030704NCAM00301_01_295J03.xml"
     },
     {
       "name": "NLF_0020_0668725913_616ECM_N0030740NCAM00301_01_295J03.png",
@@ -63,7 +131,24 @@
       "lon": 77.451791912,
       "lat": 18.445199249,
       "distance": 46.157,
-      "routeOffsetM": 0.0
+      "routeOffsetM": 0.0,
+      "env": {
+        "utc": "2021-03-11T09:13:37.857Z",
+        "earthReceived": "2021-03-11T14:54:10.313Z",
+        "lmst": "15:12:31.971",
+        "ltst": "14:41:34",
+        "sunElevation": 48.8851,
+        "sunAzimuth": 258.265,
+        "navcamTempC": -16.4191,
+        "armTempC": {
+          "AZIMUTH JOINT": -26.7334,
+          "ELEVATION JOINT": -25.7539,
+          "ELBOW JOINT": -20.9075,
+          "WRIST JOINT": -20.3782,
+          "TURRET JOINT": -29.8652
+        }
+      },
+      "labelUrl": "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol/00020/ids/edr/ncam/NLF_0020_0668725913_616ECM_N0030740NCAM00301_01_295J03.xml"
     },
     {
       "name": "NLF_0020_0668728153_417ECM_N0030770NCAM00304_01_195J03.png",
@@ -76,7 +161,24 @@
       "lon": 77.45185605,
       "lat": 18.445148363,
       "distance": 50.859,
-      "routeOffsetM": 0.0
+      "routeOffsetM": 0.0,
+      "env": {
+        "utc": "2021-03-11T09:50:57.675Z",
+        "earthReceived": "2021-03-11T15:10:52.188Z",
+        "lmst": "15:48:51.861",
+        "ltst": "15:17:55",
+        "sunElevation": 40.3982,
+        "sunAzimuth": 262.598,
+        "navcamTempC": -18.0172,
+        "armTempC": {
+          "AZIMUTH JOINT": -25.461,
+          "ELEVATION JOINT": -25.4362,
+          "ELBOW JOINT": -19.6393,
+          "WRIST JOINT": -21.6512,
+          "TURRET JOINT": -27.6194
+        }
+      },
+      "labelUrl": "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol/00020/ids/edr/ncam/NLF_0020_0668728153_417ECM_N0030770NCAM00304_01_195J03.xml"
     },
     {
       "name": "NLF_0023_0668989457_042ECM_N0030792NCAM03023_01_195J03.png",
@@ -89,7 +191,24 @@
       "lon": 77.451777107,
       "lat": 18.445202287,
       "distance": 56.329,
-      "routeOffsetM": 0.0
+      "routeOffsetM": 0.0,
+      "env": {
+        "utc": "2021-03-14T10:26:03.360Z",
+        "earthReceived": "2021-03-14T17:28:00.375Z",
+        "lmst": "14:27:26.129",
+        "ltst": "13:57:33",
+        "sunElevation": 59.1998,
+        "sunAzimuth": 251.974,
+        "navcamTempC": -17.6977,
+        "armTempC": {
+          "AZIMUTH JOINT": -23.5513,
+          "ELEVATION JOINT": -18.4365,
+          "ELBOW JOINT": -11.3793,
+          "WRIST JOINT": -12.4078,
+          "TURRET JOINT": -30.5064
+        }
+      },
+      "labelUrl": "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol/00023/ids/edr/ncam/NLF_0023_0668989457_042ECM_N0030792NCAM03023_01_195J03.xml"
     }
   ],
   "tiles": [
@@ -458,9 +577,752 @@
       56.329
     ]
   ],
+  "poses": [
+    {
+      "drive": 386,
+      "sol": 15,
+      "sclk": 668279724,
+      "lmst": "14:34:57",
+      "pitch": -1.797,
+      "roll": 1.538,
+      "yaw": 88.389,
+      "elevationM": 0.0
+    },
+    {
+      "drive": 392,
+      "sol": 16,
+      "sclk": 668365999,
+      "lmst": "13:54:24",
+      "pitch": -0.087,
+      "roll": 1.473,
+      "yaw": 73.065,
+      "elevationM": 0.0
+    },
+    {
+      "drive": 398,
+      "sol": 16,
+      "sclk": 668366038,
+      "lmst": "13:55:02",
+      "pitch": 0.586,
+      "roll": 1.305,
+      "yaw": 72.746,
+      "elevationM": 0.007
+    },
+    {
+      "drive": 404,
+      "sol": 16,
+      "sclk": 668366066,
+      "lmst": "13:55:30",
+      "pitch": -0.281,
+      "roll": 0.048,
+      "yaw": 73.165,
+      "elevationM": 0.005
+    },
+    {
+      "drive": 410,
+      "sol": 16,
+      "sclk": 668366095,
+      "lmst": "13:55:58",
+      "pitch": -0.131,
+      "roll": -0.1,
+      "yaw": 73.256,
+      "elevationM": 0.004
+    },
+    {
+      "drive": 416,
+      "sol": 16,
+      "sclk": 668366124,
+      "lmst": "13:56:26",
+      "pitch": 1.627,
+      "roll": -0.221,
+      "yaw": 72.423,
+      "elevationM": 0.015
+    },
+    {
+      "drive": 422,
+      "sol": 16,
+      "sclk": 668366152,
+      "lmst": "13:56:53",
+      "pitch": 0.255,
+      "roll": -0.12,
+      "yaw": 72.475,
+      "elevationM": 0.04
+    },
+    {
+      "drive": 428,
+      "sol": 16,
+      "sclk": 668366181,
+      "lmst": "13:57:21",
+      "pitch": 0.661,
+      "roll": -0.065,
+      "yaw": 72.788,
+      "elevationM": 0.044
+    },
+    {
+      "drive": 434,
+      "sol": 16,
+      "sclk": 668366210,
+      "lmst": "13:57:50",
+      "pitch": 0.982,
+      "roll": 0.09,
+      "yaw": 72.282,
+      "elevationM": 0.058
+    },
+    {
+      "drive": 440,
+      "sol": 16,
+      "sclk": 668366238,
+      "lmst": "13:58:17",
+      "pitch": 1.762,
+      "roll": 0.362,
+      "yaw": 72.186,
+      "elevationM": 0.087
+    },
+    {
+      "drive": 446,
+      "sol": 16,
+      "sclk": 668366269,
+      "lmst": "13:58:47",
+      "pitch": 2.331,
+      "roll": -0.054,
+      "yaw": 72.168,
+      "elevationM": 0.13
+    },
+    {
+      "drive": 452,
+      "sol": 16,
+      "sclk": 668366298,
+      "lmst": "13:59:15",
+      "pitch": 0.993,
+      "roll": -0.1,
+      "yaw": 72.399,
+      "elevationM": 0.162
+    },
+    {
+      "drive": 458,
+      "sol": 16,
+      "sclk": 668366327,
+      "lmst": "13:59:44",
+      "pitch": 2.116,
+      "roll": 0.381,
+      "yaw": 71.598,
+      "elevationM": 0.19
+    },
+    {
+      "drive": 464,
+      "sol": 16,
+      "sclk": 668366355,
+      "lmst": "14:00:11",
+      "pitch": 1.91,
+      "roll": 0.721,
+      "yaw": 71.437,
+      "elevationM": 0.229
+    },
+    {
+      "drive": 470,
+      "sol": 16,
+      "sclk": 668366384,
+      "lmst": "14:00:39",
+      "pitch": 1.039,
+      "roll": 0.834,
+      "yaw": 71.595,
+      "elevationM": 0.259
+    },
+    {
+      "drive": 476,
+      "sol": 16,
+      "sclk": 668366403,
+      "lmst": "14:00:58",
+      "pitch": 0.891,
+      "roll": 1.092,
+      "yaw": 78.284,
+      "elevationM": 0.259
+    },
+    {
+      "drive": 482,
+      "sol": 16,
+      "sclk": 668366440,
+      "lmst": "14:01:34",
+      "pitch": 0.609,
+      "roll": 0.351,
+      "yaw": 78.089,
+      "elevationM": 0.275
+    },
+    {
+      "drive": 488,
+      "sol": 16,
+      "sclk": 668366454,
+      "lmst": "14:01:47",
+      "pitch": 0.372,
+      "roll": 0.456,
+      "yaw": 78.085,
+      "elevationM": 0.278
+    },
+    {
+      "drive": 494,
+      "sol": 16,
+      "sclk": 668366482,
+      "lmst": "14:02:14",
+      "pitch": 0.203,
+      "roll": 0.851,
+      "yaw": 72.567,
+      "elevationM": 0.278
+    },
+    {
+      "drive": 500,
+      "sol": 16,
+      "sclk": 668366520,
+      "lmst": "14:02:51",
+      "pitch": 0.251,
+      "roll": 0.663,
+      "yaw": 72.521,
+      "elevationM": 0.29
+    },
+    {
+      "drive": 506,
+      "sol": 16,
+      "sclk": 668366549,
+      "lmst": "14:03:20",
+      "pitch": 1.141,
+      "roll": -0.172,
+      "yaw": 72.747,
+      "elevationM": 0.307
+    },
+    {
+      "drive": 512,
+      "sol": 16,
+      "sclk": 668366577,
+      "lmst": "14:03:47",
+      "pitch": 2.566,
+      "roll": -1.061,
+      "yaw": 73.352,
+      "elevationM": 0.335
+    },
+    {
+      "drive": 518,
+      "sol": 16,
+      "sclk": 668366606,
+      "lmst": "14:04:15",
+      "pitch": 3.203,
+      "roll": -1.249,
+      "yaw": 73.834,
+      "elevationM": 0.381
+    },
+    {
+      "drive": 524,
+      "sol": 16,
+      "sclk": 668366635,
+      "lmst": "14:04:43",
+      "pitch": 2.008,
+      "roll": -0.817,
+      "yaw": 74.094,
+      "elevationM": 0.419
+    },
+    {
+      "drive": 530,
+      "sol": 16,
+      "sclk": 668366663,
+      "lmst": "14:05:11",
+      "pitch": 2.013,
+      "roll": -0.454,
+      "yaw": 73.908,
+      "elevationM": 0.451
+    },
+    {
+      "drive": 536,
+      "sol": 16,
+      "sclk": 668366692,
+      "lmst": "14:05:39",
+      "pitch": 2.603,
+      "roll": -0.329,
+      "yaw": 74.556,
+      "elevationM": 0.494
+    },
+    {
+      "drive": 542,
+      "sol": 16,
+      "sclk": 668366710,
+      "lmst": "14:05:56",
+      "pitch": 2.52,
+      "roll": -0.365,
+      "yaw": 71.497,
+      "elevationM": 0.494
+    },
+    {
+      "drive": 548,
+      "sol": 16,
+      "sclk": 668366746,
+      "lmst": "14:06:31",
+      "pitch": 1.262,
+      "roll": -0.351,
+      "yaw": 71.571,
+      "elevationM": 0.531
+    },
+    {
+      "drive": 554,
+      "sol": 16,
+      "sclk": 668366828,
+      "lmst": "14:07:51",
+      "pitch": 0.89,
+      "roll": -0.44,
+      "yaw": 71.835,
+      "elevationM": 0.555
+    },
+    {
+      "drive": 560,
+      "sol": 16,
+      "sclk": 668366856,
+      "lmst": "14:08:18",
+      "pitch": 1.289,
+      "roll": -0.682,
+      "yaw": 71.856,
+      "elevationM": 0.577
+    },
+    {
+      "drive": 566,
+      "sol": 16,
+      "sclk": 668366885,
+      "lmst": "14:08:47",
+      "pitch": 0.972,
+      "roll": -0.483,
+      "yaw": 71.381,
+      "elevationM": 0.602
+    },
+    {
+      "drive": 572,
+      "sol": 16,
+      "sclk": 668366914,
+      "lmst": "14:09:15",
+      "pitch": 0.901,
+      "roll": -0.411,
+      "yaw": 71.021,
+      "elevationM": 0.619
+    },
+    {
+      "drive": 578,
+      "sol": 16,
+      "sclk": 668366947,
+      "lmst": "14:09:47",
+      "pitch": 1.957,
+      "roll": -0.35,
+      "yaw": 71.428,
+      "elevationM": 0.648
+    },
+    {
+      "drive": 584,
+      "sol": 20,
+      "sclk": 668725049,
+      "lmst": "14:58:30",
+      "pitch": 1.751,
+      "roll": -0.153,
+      "yaw": 60.769,
+      "elevationM": 0.648
+    },
+    {
+      "drive": 590,
+      "sol": 20,
+      "sclk": 668725088,
+      "lmst": "14:59:08",
+      "pitch": 0.793,
+      "roll": 0.293,
+      "yaw": 60.287,
+      "elevationM": 0.674
+    },
+    {
+      "drive": 596,
+      "sol": 20,
+      "sclk": 668725116,
+      "lmst": "14:59:36",
+      "pitch": -0.196,
+      "roll": -0.336,
+      "yaw": 60.389,
+      "elevationM": 0.678
+    },
+    {
+      "drive": 602,
+      "sol": 20,
+      "sclk": 668725148,
+      "lmst": "15:00:07",
+      "pitch": 1.18,
+      "roll": -1.317,
+      "yaw": 61.383,
+      "elevationM": 0.689
+    },
+    {
+      "drive": 608,
+      "sol": 20,
+      "sclk": 668725166,
+      "lmst": "15:00:24",
+      "pitch": 1.147,
+      "roll": -0.673,
+      "yaw": 61.534,
+      "elevationM": 0.697
+    },
+    {
+      "drive": 614,
+      "sol": 20,
+      "sclk": 668725215,
+      "lmst": "15:01:12",
+      "pitch": 2.466,
+      "roll": -0.234,
+      "yaw": 99.481,
+      "elevationM": 0.697
+    },
+    {
+      "drive": 620,
+      "sol": 20,
+      "sclk": 668725255,
+      "lmst": "15:01:51",
+      "pitch": 1.817,
+      "roll": 0.078,
+      "yaw": 99.136,
+      "elevationM": 0.736
+    },
+    {
+      "drive": 626,
+      "sol": 20,
+      "sclk": 668725283,
+      "lmst": "15:02:18",
+      "pitch": 1.075,
+      "roll": 0.874,
+      "yaw": 98.598,
+      "elevationM": 0.764
+    },
+    {
+      "drive": 632,
+      "sol": 20,
+      "sclk": 668725313,
+      "lmst": "15:02:47",
+      "pitch": 1.329,
+      "roll": 1.036,
+      "yaw": 98.692,
+      "elevationM": 0.789
+    },
+    {
+      "drive": 638,
+      "sol": 20,
+      "sclk": 668725344,
+      "lmst": "15:03:18",
+      "pitch": 1.649,
+      "roll": 1.08,
+      "yaw": 99.153,
+      "elevationM": 0.823
+    },
+    {
+      "drive": 644,
+      "sol": 20,
+      "sclk": 668725373,
+      "lmst": "15:03:46",
+      "pitch": 1.624,
+      "roll": 0.86,
+      "yaw": 99.248,
+      "elevationM": 0.859
+    },
+    {
+      "drive": 650,
+      "sol": 20,
+      "sclk": 668725402,
+      "lmst": "15:04:14",
+      "pitch": 0.967,
+      "roll": 0.844,
+      "yaw": 99.477,
+      "elevationM": 0.895
+    },
+    {
+      "drive": 656,
+      "sol": 20,
+      "sclk": 668725430,
+      "lmst": "15:04:41",
+      "pitch": 0.093,
+      "roll": 1.154,
+      "yaw": 99.635,
+      "elevationM": 0.912
+    },
+    {
+      "drive": 662,
+      "sol": 20,
+      "sclk": 668725459,
+      "lmst": "15:05:10",
+      "pitch": 0.428,
+      "roll": 0.264,
+      "yaw": 98.88,
+      "elevationM": 0.924
+    },
+    {
+      "drive": 668,
+      "sol": 20,
+      "sclk": 668725479,
+      "lmst": "15:05:29",
+      "pitch": 0.474,
+      "roll": 0.141,
+      "yaw": 103.641,
+      "elevationM": 0.924
+    },
+    {
+      "drive": 674,
+      "sol": 20,
+      "sclk": 668725512,
+      "lmst": "15:06:01",
+      "pitch": 0.455,
+      "roll": 0.239,
+      "yaw": 103.592,
+      "elevationM": 0.938
+    },
+    {
+      "drive": 680,
+      "sol": 20,
+      "sclk": 668725550,
+      "lmst": "15:06:38",
+      "pitch": 1.429,
+      "roll": 0.413,
+      "yaw": 126.095,
+      "elevationM": 0.938
+    },
+    {
+      "drive": 686,
+      "sol": 20,
+      "sclk": 668725589,
+      "lmst": "15:07:16",
+      "pitch": -0.343,
+      "roll": 0.228,
+      "yaw": 128.647,
+      "elevationM": 0.951
+    },
+    {
+      "drive": 692,
+      "sol": 20,
+      "sclk": 668725618,
+      "lmst": "15:07:44",
+      "pitch": -0.51,
+      "roll": -0.488,
+      "yaw": 127.982,
+      "elevationM": 0.949
+    },
+    {
+      "drive": 698,
+      "sol": 20,
+      "sclk": 668725636,
+      "lmst": "15:08:02",
+      "pitch": -0.241,
+      "roll": -0.175,
+      "yaw": 121.835,
+      "elevationM": 0.949
+    },
+    {
+      "drive": 704,
+      "sol": 20,
+      "sclk": 668725673,
+      "lmst": "15:08:38",
+      "pitch": -0.807,
+      "roll": 0.071,
+      "yaw": 122.283,
+      "elevationM": 0.948
+    },
+    {
+      "drive": 710,
+      "sol": 20,
+      "sclk": 668725748,
+      "lmst": "15:09:51",
+      "pitch": -0.765,
+      "roll": 0.022,
+      "yaw": 127.701,
+      "elevationM": 0.948
+    },
+    {
+      "drive": 716,
+      "sol": 20,
+      "sclk": 668725787,
+      "lmst": "15:10:29",
+      "pitch": -0.741,
+      "roll": 0.147,
+      "yaw": 127.141,
+      "elevationM": 0.939
+    },
+    {
+      "drive": 722,
+      "sol": 20,
+      "sclk": 668725815,
+      "lmst": "15:10:56",
+      "pitch": -0.129,
+      "roll": -0.488,
+      "yaw": 127.459,
+      "elevationM": 0.935
+    },
+    {
+      "drive": 728,
+      "sol": 20,
+      "sclk": 668725844,
+      "lmst": "15:11:24",
+      "pitch": 0.538,
+      "roll": 0.058,
+      "yaw": 127.653,
+      "elevationM": 0.937
+    },
+    {
+      "drive": 734,
+      "sol": 20,
+      "sclk": 668725876,
+      "lmst": "15:11:55",
+      "pitch": 0.584,
+      "roll": 0.36,
+      "yaw": 127.703,
+      "elevationM": 0.945
+    },
+    {
+      "drive": 740,
+      "sol": 20,
+      "sclk": 668725900,
+      "lmst": "15:12:19",
+      "pitch": 2.115,
+      "roll": -0.393,
+      "yaw": 128.094,
+      "elevationM": 0.962
+    },
+    {
+      "drive": 746,
+      "sol": 20,
+      "sclk": 668725969,
+      "lmst": "15:13:26",
+      "pitch": 1.851,
+      "roll": -0.06,
+      "yaw": 128.05,
+      "elevationM": 0.99
+    },
+    {
+      "drive": 752,
+      "sol": 20,
+      "sclk": 668725998,
+      "lmst": "15:13:54",
+      "pitch": 0.884,
+      "roll": 0.264,
+      "yaw": 128.372,
+      "elevationM": 1.018
+    },
+    {
+      "drive": 758,
+      "sol": 20,
+      "sclk": 668726026,
+      "lmst": "15:14:21",
+      "pitch": -0.75,
+      "roll": 0.926,
+      "yaw": 127.021,
+      "elevationM": 1.021
+    },
+    {
+      "drive": 764,
+      "sol": 20,
+      "sclk": 668726055,
+      "lmst": "15:14:50",
+      "pitch": -1.304,
+      "roll": 1.309,
+      "yaw": 127.756,
+      "elevationM": 1.009
+    },
+    {
+      "drive": 770,
+      "sol": 20,
+      "sclk": 668726088,
+      "lmst": "15:15:22",
+      "pitch": 0.541,
+      "roll": 0.95,
+      "yaw": 127.837,
+      "elevationM": 1.005
+    },
+    {
+      "drive": 776,
+      "sol": 23,
+      "sclk": 668986905,
+      "lmst": "13:46:02",
+      "pitch": -0.625,
+      "roll": 0.913,
+      "yaw": 126.637,
+      "elevationM": 1.027
+    },
+    {
+      "drive": 782,
+      "sol": 23,
+      "sclk": 668987231,
+      "lmst": "13:51:20",
+      "pitch": 2.219,
+      "roll": -0.287,
+      "yaw": 127.645,
+      "elevationM": 0.966
+    },
+    {
+      "drive": 788,
+      "sol": 23,
+      "sclk": 668987369,
+      "lmst": "13:53:34",
+      "pitch": -1.087,
+      "roll": 0.961,
+      "yaw": -52.349,
+      "elevationM": 0.966
+    },
+    {
+      "drive": 792,
+      "sol": 23,
+      "sclk": 668987389,
+      "lmst": "13:53:53",
+      "pitch": -1.426,
+      "roll": 0.621,
+      "yaw": -51.918,
+      "elevationM": 0.966
+    }
+  ],
+  "drives": [
+    {
+      "fromDrive": 386,
+      "toDrive": 578,
+      "sol": 16,
+      "startSclk": 668365999,
+      "endSclk": 668366947,
+      "startLmst": "13:54:24",
+      "endLmst": "14:09:47",
+      "lengthM": 27.434,
+      "climbM": 0.648,
+      "steepest": {
+        "drive": 518,
+        "pitch": 3.203,
+        "roll": -1.249
+      }
+    },
+    {
+      "fromDrive": 578,
+      "toDrive": 770,
+      "sol": 20,
+      "startSclk": 668725049,
+      "endSclk": 668726088,
+      "startLmst": "14:58:30",
+      "endLmst": "15:15:22",
+      "lengthM": 23.425,
+      "climbM": 0.357,
+      "steepest": {
+        "drive": 614,
+        "pitch": 2.466,
+        "roll": -0.234
+      }
+    },
+    {
+      "fromDrive": 770,
+      "toDrive": 792,
+      "sol": 23,
+      "startSclk": 668986905,
+      "endSclk": 668987389,
+      "startLmst": "13:46:02",
+      "endLmst": "13:53:53",
+      "lengthM": 5.47,
+      "climbM": -0.039,
+      "steepest": {
+        "drive": 782,
+        "pitch": 2.219,
+        "roll": -0.287
+      }
+    }
+  ],
   "sources": {
     "traverse": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json",
     "places": "https://pds-geosciences.wustl.edu/m2020/urn-nasa-pds-mars2020_rover_places/data_localizations/best_interp.csv",
-    "wmts": "https://trek.nasa.gov/tiles/Mars/EQ/JEZ_hirise_soc_006_orthoMosaic_25cm_Eqc_latTs0_lon0_first_dd/1.0.0/WMTSCapabilities.xml"
+    "wmts": "https://trek.nasa.gov/tiles/Mars/EQ/JEZ_hirise_soc_006_orthoMosaic_25cm_Eqc_latTs0_lon0_first_dd/1.0.0/WMTSCapabilities.xml",
+    "labels": "https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/data/sol"
   }
 }

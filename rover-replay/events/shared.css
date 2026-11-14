@@ -1,0 +1,68 @@
+:root {
+  color-scheme: dark;
+  font: 15px/1.55 Inter, "Yu Gothic UI", "Noto Sans CJK JP", Meiryo, system-ui, sans-serif;
+  background: #121613; color: #eaf0df;
+  --panel: #1a211c; --line: #364238; --muted: #a6b3a5; --mint: #b8f98e;
+  --amber: #ffbb76; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1,h2,h3,p,figure { margin: 0; }
+[hidden] { display: none !important; }
+.shell { max-width: 1330px; width: calc(100% - 48px); margin-inline: auto; }
+.top,.heading,.panel-head,.mission-meta,.mission-bottom,footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.top { min-height: 76px; border-bottom: 1px solid var(--line); }
+.identity,.stage,.buttons,.choices { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.planet { width: 31px; height: 31px; border-radius: 50%; flex: none; background: radial-gradient(circle at 32% 28%,#f4ba83,#b16743 58%,#58352c); }
+.eyebrow,.mono { font: 12px/1.5 var(--mono); letter-spacing: .07em; }
+.eyebrow { color: var(--mint); }
+.muted,.mono { color: var(--muted); }
+.stage { font-size: 13px; }
+.signal { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); }
+h1 { font-size: 19px; line-height: 1.15; }
+h2 { font-size: clamp(24px,4vw,38px); font-weight: 690; line-height: 1.2; margin-top: 4px; }
+h3 { font-size: 15px; font-weight: 650; }
+.heading { padding-block: 20px 16px; align-items: end; }
+.heading .muted { font-size: 13px; }
+.views { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.panel { min-width: 0; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.panel-head { padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.camera,.map-wrap { position: relative; height: clamp(250px, 42vh, 450px); background: #181a15; }
+.camera img,.map-wrap svg { display: block; width: 100%; height: 100%; object-fit: contain; }
+.camera figcaption,.map-key,.north { position: absolute; padding: 5px 8px; border-radius: 5px; background: #141913ee; color: #edf6e6; font-size: 12px; }
+.camera figcaption { bottom: 10px; left: 10px; }
+.north { top: 10px; right: 10px; font-family: var(--mono); }
+.map-key { bottom: 10px; right: 10px; display: flex; align-items: center; gap: 6px; }
+.rover-key,.incident-key { width: 8px; height: 8px; background: var(--mint); border-radius: 50%; }
+.incident-key { margin-left: 6px; background: var(--amber); border-radius: 1px; transform: rotate(45deg); }
+.controls { margin-top: 12px; padding: 14px 16px; }
+.controls h3 { font-size: 19px; }
+.controls[data-alert="true"] { border-color: var(--amber); }
+.controls[data-alert="true"] h3 { color: var(--amber); }
+progress { display: block; width: 100%; height: 7px; margin-block: 12px; accent-color: var(--mint); }
+progress::-webkit-progress-bar { background: #303c31; border-radius: 9px; }
+progress::-webkit-progress-value { background: var(--mint); border-radius: 9px; }
+.mission-bottom { align-items: end; }
+.choices { margin-top: 8px; }
+button {
+  font: inherit; color: inherit; min-height: 41px; padding: 7px 13px; border-radius: 7px;
+  border: 1px solid #536557; background: #28332a; cursor: pointer;
+}
+button.primary { background: var(--mint); color: #142413; border-color: transparent; font-weight: 700; }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible,a:focus-visible { outline: 2px solid var(--mint); outline-offset: 4px; }
+footer { flex-wrap: wrap; color: var(--muted); font-size: 12px; padding-block: 12px; }
+footer nav { display: flex; flex-wrap: wrap; gap: 9px 14px; }
+a { color: inherit; text-underline-offset: 3px; }
+@media (max-width: 780px) {
+  .shell { width: calc(100% - 28px); }
+  .heading { display: grid; gap: 6px; }
+  .camera,.map-wrap { height: 280px; }
+}
+@media (max-width: 580px) {
+  .top,.mission-bottom { align-items: start; flex-direction: column; gap: 8px; }
+  .top { padding-block: 12px; }
+  .views { grid-template-columns: 1fr; }
+  .camera,.map-wrap { height: 230px; }
+  .choices button { min-height: 44px; }
+}
