@@ -1,5 +1,6 @@
 import {gradeAnswer} from "./grader.js";
-import {Sound} from "./audio.js";
+import {sound} from "./audio.js";
+import {showResult, hideResult} from "./result.js";
 
 const byId = (id) => document.getElementById(id);
 const map = byId("map");
@@ -17,7 +18,6 @@ const submit = byId("submit");
 const giveUp = byId("give-up");
 const accidentPick = byId("accident-pick");
 const controls = document.querySelector(".controls");
-const sound = new Sound();
 const MM_SCALE = 0.55; // minimap zoom: map pixels to minimap units (about 24 m across the radius)
 const KIND_LABELS = {info: "MISSION CONTROL", plan: "走行計画", accident: "アクシデント", result: "結果",
   success: "ミッション成功", fail: "ミッション失敗"};
@@ -66,6 +66,10 @@ let request;
 let lastTick;
 let mmHeading = null;
 let nextPing;
+// What the player answered, for the final score and review (result.js).
+const newRecord = () => ({plans: {}, quizzes: {}, samples: {}, accident: {tries: 0, answers: [], gaveUp: false, passed: false}});
+let record = newRecord();
+let resultTimer;
 
 function svg(tag, attrs) {
   const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
@@ -607,7 +611,9 @@ function step(dt) {
 function resolvePlan(index, choice) {
   if (state !== "planning" || activeEvent !== index) return;
   const plan = events[index].plan;
+  const answered = record.plans[index] ??= {wrong: [], done: false};
   if (choice !== plan.correct) {
+    answered.wrong.push(choice);
     mistakes += 1;
     message.textContent = plan.options[choice].hint;
     sound.play("wrong");
@@ -618,6 +624,7 @@ function resolvePlan(index, choice) {
     spend(RULES.power.wrongChoice, `判断ミス −${RULES.power.wrongChoice}%`);
     return;
   }
+  answered.done = true;
   resolved.add(index);
   setState("running");
   sound.play("correct");
@@ -644,7 +651,10 @@ function submitAnswer() {
   if (state !== "accident") return;
   const index = activeEvent;
   const result = gradeAnswer(answer.value, accident);
+  record.accident.tries += 1;
+  record.accident.answers.push(answer.value.trim());
   if (result.passed) {
+    record.accident.passed = true;
     sound.play("correct");
     closeAccident(index, `対処成功：${result.matched.map((group) => group.name).join("・")}`);
     return;
@@ -659,6 +669,7 @@ function submitAnswer() {
 function revealAnswer() {
   if (state !== "accident") return;
   const index = activeEvent;
+  record.accident.gaveUp = true;
   if (!spend(RULES.power.giveUp, `答えを見た −${RULES.power.giveUp}%`)) return;
   closeAccident(index, "答えを確認");
 }
@@ -807,7 +818,9 @@ function answerQuiz(index, choice) {
   if (state !== "bigevent" || activeEvent !== index) return;
   const quiz = events[index].data.quiz;
   const note = byId("be-message");
+  const answered = record.quizzes[index] ??= {wrong: [], done: false};
   if (choice !== quiz.correct) {
+    answered.wrong.push(choice);
     mistakes += 1;
     note.textContent = quiz.options[choice].hint;
     sound.play("wrong");
@@ -816,6 +829,7 @@ function answerQuiz(index, choice) {
   }
   const strong = document.createElement("b");
   strong.textContent = "正解。";
+  answered.done = true;
   sound.play("correct");
   note.replaceChildren(strong, ` ${quiz.answer}`);
   for (const button of byId("be-choices").children) button.disabled = true;
@@ -826,6 +840,7 @@ function answerQuiz(index, choice) {
 function closeBigEvent() {
   if (state !== "bigevent") return;
   const data = events[activeEvent].data;
+  if (data.sampling) record.samples[activeEvent] = true;
   resolved.add(activeEvent);
   hideBigEvent();
   if (data.at === "goal") {
@@ -851,6 +866,21 @@ function end(nextState, heading, detail) {
   start.disabled = true;
   start.textContent = "走行終了";
   reset.focus();
+  clearTimeout(resultTimer);
+  resultTimer = setTimeout(() => showResult(missionSummary(nextState), {onRetry: () => reset.click()}), 1400);
+}
+
+// Everything result.js needs to score the mission and build the review.
+function missionSummary(nextState) {
+  const pick = (type, test, extra) => events.flatMap((event, index) => (event.type === type && test(event) ? [extra(event, index)] : []));
+  return {
+    complete: nextState === "complete",
+    power: Math.max(0, power),
+    plans: pick("plan", () => true, (event, index) => ({plan: event.plan, ...(record.plans[index] ?? {wrong: [], done: false})})),
+    accident: accident ? {data: accident, ...record.accident} : null,
+    quizzes: pick("big", (event) => event.data.quiz, (event, index) => ({data: event.data, ...(record.quizzes[index] ?? {wrong: [], done: false})})),
+    samples: pick("big", (event) => event.data.sampling, (event, index) => ({data: event.data, done: Boolean(record.samples[index])})),
+  };
 }
 
 const ACTIVE = ["running", "planning", "accident"];
@@ -908,10 +938,12 @@ const showSound = () => {
   soundButton.setAttribute("aria-pressed", sound.enabled);
 };
 showSound();
-soundButton.addEventListener("click", () => { sound.start(); sound.toggle(); showSound(); });
+soundButton.addEventListener("click", () => { sound.start(); sound.toggle(); });
+window.addEventListener("soundchange", showSound);
 
 // Keys: 1-3 choose, M map, Esc close the map, Space pause or resume.
 document.addEventListener("keydown", (event) => {
+  if (document.body.dataset.scene === "voyage") return; // the prologue has its own keys
   const typing = ["TEXTAREA", "INPUT", "SELECT"].includes(event.target.tagName);
   if (event.key === "Escape") { toggleMap(false); return; }
   if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
@@ -935,6 +967,9 @@ reset.addEventListener("click", () => {
   mistakes = 0;
   power = RULES.power.start;
   resolved = new Set();
+  record = newRecord();
+  clearTimeout(resultTimer);
+  hideResult();
   mmHeading = null;
   toggleMap(false);
   hideToast();

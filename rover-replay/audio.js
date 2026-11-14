@@ -8,6 +8,7 @@
 // from the first click.
 
 const STORE_KEY = "jezero-sound";
+const rand = (a, b) => a + Math.random() * (b - a);
 const DRIVE_VOLUME = 0.6;
 const WIND_VOLUME = 0.35;
 
@@ -23,8 +24,8 @@ export class Sound {
     this.lastLow = 0;
   }
 
-  // Create the audio context and the recorded loops. Safe to call more than once.
-  start() {
+  // Create the audio context only (the prologue uses effects, not the Mars recordings).
+  unlock() {
     if (this.ctx) { this.ctx.resume?.(); return; }
     try {
       this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -32,6 +33,12 @@ export class Sound {
       this.master.gain.value = this.enabled ? 0.8 : 0;
       this.master.connect(this.ctx.destination);
     } catch { this.ctx = null; }
+  }
+
+  // Create the audio context and the recorded loops. Safe to call more than once.
+  start() {
+    this.unlock();
+    if (this.drive) return;
     this.drive = this.loop("assets/audio/drive-sol16.mp3");
     this.wind = this.loop("assets/audio/wind-sol1.mp3");
     this.fade(this.wind, WIND_VOLUME, 1500);
@@ -78,6 +85,7 @@ export class Sound {
     try { localStorage.setItem(STORE_KEY, this.enabled ? "on" : "off"); } catch { /* storage unavailable */ }
     if (this.master) this.master.gain.setTargetAtTime(this.enabled ? 0.8 : 0, this.ctx.currentTime, 0.05);
     for (const audio of [this.drive, this.wind]) if (audio) audio.muted = !this.enabled;
+    window.dispatchEvent(new CustomEvent("soundchange", {detail: this.enabled}));
     return this.enabled;
   }
 
@@ -96,14 +104,14 @@ export class Sound {
     osc.stop(t + length + 0.05);
   }
 
-  noise(start, length, {from = 300, to = 2400, gain = 0.25, q = 1.2} = {}) {
+  noise(start, length, {from = 300, to = 2400, gain = 0.25, q = 1.2, type = "bandpass"} = {}) {
     const ctx = this.ctx, t = ctx.currentTime + start;
     const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * length), ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1;
     const source = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), amp = ctx.createGain();
     source.buffer = buffer;
-    filter.type = "bandpass";
+    filter.type = type;
     filter.Q.value = q;
     filter.frequency.setValueAtTime(from, t);
     filter.frequency.exponentialRampToValueAtTime(to, t + length);
@@ -135,8 +143,53 @@ export class Sound {
       success() { [523, 659, 784, 1046, 1318].forEach((f, i) => s.tone(f, i * 0.11, 0.5, {type: "triangle", gain: 0.12})); },
       fail() { s.tone(330, 0, 1.1, {type: "sawtooth", gain: 0.1, to: 70}); s.noise(0.2, 0.9, {from: 900, to: 120, gain: 0.12}); },
       open() { s.tone(880, 0, 0.06, {gain: 0.06}); s.tone(1320, 0.05, 0.08, {gain: 0.05}); },
+      // ----- prologue -----
+      count() { s.tone(880, 0, 0.16, {type: "square", gain: 0.06}); },
+      go() { s.tone(1320, 0, 0.7, {type: "square", gain: 0.06}); s.noise(0.05, 3.5, {from: 120, to: 60, gain: 0.35, type: "lowpass", q: 0.7}); },
+      warn() { for (let i = 0; i < 3; i += 1) s.tone(988, i * 0.24, 0.16, {type: "square", gain: 0.06}); },
+      hit() { s.noise(0, 0.32, {from: 2400, to: 200, gain: 0.4}); s.tone(110, 0, 0.3, {type: "sawtooth", gain: 0.12, to: 45}); },
+      clear() { [784, 988, 1175].forEach((f, i) => s.tone(f, i * 0.08, 0.3, {type: "triangle", gain: 0.1})); },
+      sep() { s.noise(0, 0.5, {from: 3000, to: 400, gain: 0.2, type: "highpass", q: 0.5}); s.tone(220, 0, 0.4, {gain: 0.1, to: 110}); },
+      entry() { s.noise(0, 4, {from: 200, to: 900, gain: 0.3, type: "lowpass", q: 0.6}); s.tone(48, 0, 4, {gain: 0.2, attack: 1}); },
+      // mission complete: a rising fanfare over a low swell
+      fanfare() {
+        s.tone(65, 0, 3.2, {gain: 0.18, attack: 0.5});
+        const notes = [[523, 0], [659, 0.16], [784, 0.32], [1046, 0.5], [784, 0.86], [1046, 1.02], [1318, 1.2], [1568, 1.5]];
+        for (const [f, t] of notes) s.tone(f, t, t >= 1.5 ? 1.8 : 0.32, {type: "triangle", gain: 0.11});
+        [523, 659, 784].forEach((f) => s.tone(f, 1.5, 1.8, {type: "sine", gain: 0.06}));
+      },
+      pop() { s.noise(0, 0.45, {from: 3000, to: 300, gain: 0.22}); s.tone(rand(600, 1200), 0.05, 0.4, {gain: 0.05, to: 200}); },
+      arrive() {
+        s.tone(98, 0, 2.2, {gain: 0.2, attack: 0.3});
+        [392, 523, 659, 784, 1046].forEach((f, i) => s.tone(f, 0.2 + i * 0.12, 1.6, {type: "triangle", gain: 0.09}));
+      },
     };
     try { effects[name]?.(); } catch { /* audio unavailable */ }
+  }
+
+  // A quiet drone for the cruise through space.
+  drone(on) {
+    if (!this.ctx) return;
+    if (on && !this.droneNodes) {
+      const amp = this.ctx.createGain();
+      amp.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+      amp.gain.exponentialRampToValueAtTime(0.05, this.ctx.currentTime + 2);
+      amp.connect(this.master);
+      const oscillators = [55, 82.4, 110.3].map((freq) => {
+        const osc = this.ctx.createOscillator();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        osc.connect(amp);
+        osc.start();
+        return osc;
+      });
+      this.droneNodes = {amp, oscillators};
+    } else if (!on && this.droneNodes) {
+      const {amp, oscillators} = this.droneNodes;
+      amp.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.4);
+      for (const osc of oscillators) osc.stop(this.ctx.currentTime + 2);
+      this.droneNodes = null;
+    }
   }
 
   // Power warning, at most every 4 seconds.
@@ -147,3 +200,6 @@ export class Sound {
     this.play("low");
   }
 }
+
+// One sound system shared by the prologue and the rover game.
+export const sound = new Sound();
