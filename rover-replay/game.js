@@ -1,4 +1,5 @@
 import {gradeAnswer} from "./grader.js";
+import {Sound} from "./audio.js";
 
 const byId = (id) => document.getElementById(id);
 const map = byId("map");
@@ -16,6 +17,10 @@ const submit = byId("submit");
 const giveUp = byId("give-up");
 const accidentPick = byId("accident-pick");
 const controls = document.querySelector(".controls");
+const sound = new Sound();
+const MM_SCALE = 0.55; // minimap zoom: map pixels to minimap units (about 24 m across the radius)
+const KIND_LABELS = {info: "MISSION CONTROL", plan: "走行計画", accident: "アクシデント", result: "結果",
+  success: "ミッション成功", fail: "ミッション失敗"};
 
 // Game settings. The values each decision is judged against come from NASA data
 // (assets/mission.json); these thresholds and the power model are invented.
@@ -59,6 +64,8 @@ let mistakes = 0;
 let power = RULES.power.start;
 let request;
 let lastTick;
+let mmHeading = null;
+let nextPing;
 
 function svg(tag, attrs) {
   const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
@@ -220,37 +227,45 @@ function buildPlans() {
 function drawMap() {
   const {width, height, tiles, route, scale20m} = mission;
   map.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  const imagery = svg("svg", {width, height, overflow: "hidden"});
-  map.append(imagery);
+  const content = svg("g", {id: "map-content"});
+  map.append(content);
   for (const tile of tiles) {
-    imagery.append(svg("image", {href: `assets/${tile.name}`, x: tile.x, y: tile.y,
+    content.append(svg("image", {href: `assets/${tile.name}`, x: tile.x, y: tile.y,
       width: tile.size, height: tile.size}));
   }
   const points = route.map(([x,y]) => `${x},${y}`).join(" ");
-  map.append(svg("polyline", {points, fill: "none", stroke: "#18201a",
+  content.append(svg("polyline", {points, fill: "none", stroke: "#18201a",
     "stroke-width": 5, "stroke-linejoin": "round"}));
-  map.append(svg("polyline", {points, fill: "none", stroke: "#edf6e6",
+  content.append(svg("polyline", {points, fill: "none", stroke: "#edf6e6",
     "stroke-width": 2, "stroke-linejoin": "round"}));
   traveled = svg("polyline", {fill: "none", stroke: "#b8f98e",
     "stroke-width": 3, "stroke-linejoin": "round"});
-  map.append(traveled);
+  content.append(traveled);
   for (const frame of mission.frames) {
     const [x,y] = positionAt(frame.distance);
-    map.append(svg("circle", {cx:x, cy:y, r:2, fill:"#f9fff4", stroke:"#18201a"}));
+    content.append(svg("circle", {cx:x, cy:y, r:2, fill:"#f9fff4", stroke:"#18201a"}));
   }
-  for (const [index, plan] of plans.entries()) {
-    const [x,y] = positionAt(distanceAt(plan.at));
+  let planNumber = 0;
+  for (const event of events) {
+    const [x,y] = positionAt(distanceAt(event.at));
     const group = svg("g", {transform:`translate(${x} ${y})`});
-    group.append(svg("rect", {x:-4,y:-4,width:8,height:8,rx:1,
-      fill:"#ffbb76",stroke:"#312419",transform:"rotate(45)"}));
-    const number = svg("text", {x:0,y:-8,"text-anchor":"middle",fill:"#fff4e2",
+    if (event.type === "plan") {
+      planNumber += 1;
+      group.append(svg("rect", {x:-4,y:-4,width:8,height:8,rx:1,
+        fill:"#ffbb76",stroke:"#312419",transform:"rotate(45)"}));
+    } else {
+      group.append(svg("circle", {r: 4.5, fill: event.type === "accident" ? "#ff7a6b" : "#8fc7ff", stroke: "#18201a"}));
+    }
+    const label = svg("text", {x:0,y:-8,"text-anchor":"middle",fill:"#fff4e2",
       stroke:"#141a14","stroke-width":2,"paint-order":"stroke","font-size":9});
-    number.textContent = index + 1;
-    group.append(number);
-    map.append(group);
+    label.textContent = event.type === "plan" ? planNumber : event.type === "accident" ? "!" : "★";
+    group.append(label);
+    content.append(group);
   }
+  nextPing = svg("circle", {r: 6, class: "next-ping"});
+  content.append(nextPing);
   marker = svg("circle", {r:5, fill:"#b8f98e", stroke:"#18201a", "stroke-width":2});
-  map.append(marker);
+  content.append(marker);
   const y = height - 13;
   map.append(svg("path", {d:`M10 ${y-3}v3h${scale20m}v-3`,stroke:"#fff",
     "stroke-width":1.2,fill:"none"}));
@@ -258,6 +273,42 @@ function drawMap() {
     "stroke-width":2,"paint-order":"stroke","font-size":8});
   scale.textContent = "20 m";
   map.append(scale);
+  const ticks = byId("mm-ticks");
+  for (let angle = 0; angle < 360; angle += 30) {
+    ticks.append(svg("line", {x1: 0, y1: -46.5, x2: 0, y2: angle % 90 ? -44.5 : -43, transform: `rotate(${angle})`}));
+  }
+}
+
+// Heading-up minimap: the map turns so the rover's heading points up.
+function renderMinimap(distance, [x, y]) {
+  const target = ((poseAt(distance).yaw % 360) + 360) % 360;
+  if (mmHeading === null) mmHeading = target;
+  mmHeading += (((target - mmHeading + 540) % 360) - 180) * 0.18;
+  byId("mm-content").setAttribute("transform", `rotate(${-mmHeading}) scale(${MM_SCALE}) translate(${-x} ${-y})`);
+  byId("mm-ticks").setAttribute("transform", `rotate(${-mmHeading})`);
+  byId("mm-north").setAttribute("transform", `rotate(${-mmHeading})`);
+  setText("mm-dist", `${distance.toFixed(1)} m`);
+  const next = events.find((event, index) => !resolved.has(index));
+  nextPing.style.display = next ? "" : "none";
+  if (next) {
+    const [px, py] = positionAt(distanceAt(next.at));
+    nextPing.setAttribute("cx", px);
+    nextPing.setAttribute("cy", py);
+  }
+}
+
+function buildTimeline() {
+  byId("timeline-marks").replaceChildren(...events.map((event) => {
+    const mark = document.createElement("span");
+    mark.className = `tm ${event.type}`;
+    mark.style.left = `${event.at / duration * 100}%`;
+    return mark;
+  }));
+}
+
+function toggleMap(open = byId("map-overlay").hidden) {
+  byId("map-overlay").hidden = !open;
+  if (open) sound.play("open");
 }
 
 const DIRECTIONS = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"];
@@ -354,6 +405,8 @@ function renderPlayback() {
   points.push([x,y]);
   traveled.setAttribute("points", points.map(([px,py]) => `${px},${py}`).join(" "));
   renderTelemetry(distance, frame);
+  renderMinimap(distance, [x, y]);
+  for (const [i, mark] of [...byId("timeline-marks").children].entries()) mark.classList.toggle("done", resolved.has(i));
   byId("progress").value = elapsed;
   byId("elapsed").textContent = "00:" + String(Math.floor(elapsed)).padStart(2,"0");
 }
@@ -383,8 +436,9 @@ function energyAt(distance) {
 function setState(next) {
   state = next;
   const shown = state === "paused" ? pausedFrom : state;
-  document.querySelector(".screen").dataset.mode = {running: "drive", planning: "plan",
-    accident: "accident", bigevent: "bigevent"}[shown] ?? "panel";
+  const mode = {running: "drive", planning: "plan", accident: "accident", bigevent: "bigevent"}[shown] ?? "panel";
+  document.querySelector(".screen").dataset.mode = mode;
+  sound.scene(state === "paused" ? "paused" : mode);
 }
 
 function toast(heading, text, link) {
@@ -428,12 +482,25 @@ function renderPower(note) {
   byId("power-bar").style.width = `${value}%`;
   byId("power-value").textContent = `${Math.ceil(value)}%`;
   byId("power").dataset.level = value <= 25 ? "low" : value <= 50 ? "mid" : "ok";
+  byId("power").setAttribute("aria-valuenow", Math.ceil(value));
   if (note) byId("power-note").textContent = note;
 }
 
+// A one-off change (a mistake, a recharge) floats its amount beside the gauge.
+function floatPower(change) {
+  const float = byId("power-float");
+  float.textContent = `${change > 0 ? "+" : "−"}${Math.round(Math.abs(change))}%`;
+  float.className = `power-float mono ${change > 0 ? "up" : "down"}`;
+  void float.offsetWidth; // restart the animation
+  float.className = `power-float mono ${change > 0 ? "up" : "down"}`;
+}
+
 function spend(amount, note) {
+  const before = power;
   power = Math.min(RULES.power.start, power - amount);
   renderPower(note);
+  if (note && Math.abs(power - before) >= 1) floatPower(power - before);
+  if (power <= 25 && power > 0 && ACTIVE.includes(state)) sound.lowWarning();
   if (power <= 0) {
     end("failed", "ミッション失敗：電力切れ", "電力が尽き、ローバーは動けなくなりました。判断にかかった時間と、間違えた選択の分だけ電力が減ります。");
     return false;
@@ -456,22 +523,27 @@ function setFocus(keys) {
   }
 }
 
-function showStatus(heading, detail, alert = false) {
+function showStatus(heading, detail, alert = false, kind = alert ? "fail" : "info") {
   title.textContent = heading;
   message.textContent = detail;
   controls.dataset.alert = alert;
+  controls.dataset.kind = kind;
+  byId("mission-kind").textContent = KIND_LABELS[kind];
   facts.hidden = rule.hidden = choices.hidden = freeform.hidden = true;
   activeEvent = -1;
   setFocus([]);
 }
 
 function fillFacts(rows) {
-  facts.replaceChildren(...rows.flatMap(([label, value]) => {
+  facts.replaceChildren(...rows.map(([label, value]) => {
+    const tile = document.createElement("div");
     const term = document.createElement("dt");
     const detail = document.createElement("dd");
+    tile.className = "fact";
     term.textContent = label;
     detail.textContent = value;
-    return [term, detail];
+    tile.append(term, detail);
+    return tile;
   }));
 }
 
@@ -479,8 +551,9 @@ function showPlan(index) {
   const {plan, drive} = events[index];
   const previous = events.slice(0, index).filter((event) => event.type === "plan").at(-1);
   const idle = drive.sol - (previous ? previous.drive.sol : mission.frames[0].sol);
-  showStatus(plan.title, plan.prompt, true);
+  showStatus(plan.title, plan.prompt, true, "plan");
   activeEvent = index;
+  sound.play("plan");
   const gain = Math.min(idle * RULES.power.rechargePerSol, RULES.power.start - power);
   if (idle > 0) {
     spend(-gain, gain > 0 ? `前回の走行から ${idle} sol 休止：MMRTG で充電 +${Math.round(gain)}%`
@@ -499,8 +572,9 @@ function showPlan(index) {
 }
 
 function showAccident(index) {
-  showStatus(`アクシデント：${accident.title}`, accident.situation, true);
+  showStatus(accident.title, accident.situation, true, "accident");
   activeEvent = index;
+  sound.play("accident");
   fillFacts([["回答", "自由記述。考えている間も電力が減ります（Ctrl+Enter でも送信）。"]]);
   facts.hidden = false;
   answer.value = "";
@@ -536,12 +610,18 @@ function resolvePlan(index, choice) {
   if (choice !== plan.correct) {
     mistakes += 1;
     message.textContent = plan.options[choice].hint;
+    sound.play("wrong");
+    const button = choices.children[choice];
+    button.classList.remove("wrong");
+    void button.offsetWidth;
+    button.classList.add("wrong");
     spend(RULES.power.wrongChoice, `判断ミス −${RULES.power.wrongChoice}%`);
     return;
   }
   resolved.add(index);
   setState("running");
-  showStatus("計画を送信", `${plan.options[choice].label}。${plan.record}`);
+  sound.play("correct");
+  showStatus("計画を送信", `${plan.options[choice].label}。${plan.record}`, false, "result");
   toast("計画を送信", `${plan.options[choice].label}。${plan.record}`);
   start.focus();
 }
@@ -549,7 +629,7 @@ function resolvePlan(index, choice) {
 function closeAccident(index, heading) {
   resolved.add(index);
   setState("running");
-  showStatus(heading, `実際の対応（${accident.rover}・${accident.date}）：${accident.answer}`);
+  showStatus(heading, `実際の対応（${accident.rover}・${accident.date}）：${accident.answer}`, false, "result");
   const link = document.createElement("a");
   link.href = accident.source.url;
   link.target = "_blank";
@@ -565,12 +645,14 @@ function submitAnswer() {
   const index = activeEvent;
   const result = gradeAnswer(answer.value, accident);
   if (result.passed) {
+    sound.play("correct");
     closeAccident(index, `対処成功：${result.matched.map((group) => group.name).join("・")}`);
     return;
   }
   mistakes += 1;
   const hint = result.missing[0]?.hint ?? "もう少し具体的に書いてください。";
   message.textContent = `${accident.situation}　ヒント：${hint}`;
+  sound.play("wrong");
   spend(RULES.power.wrongAnswer, `回答が不十分 −${RULES.power.wrongAnswer}%`);
 }
 
@@ -584,7 +666,9 @@ function revealAnswer() {
 function showBigEvent(index) {
   const data = events[index].data;
   hideToast();
+  toggleMap(false);
   activeEvent = index;
+  sound.play("big");
   byId("be-title").textContent = data.title;
   byId("be-lead").textContent = data.lead;
   byId("be-observed").textContent = data.observed;
@@ -654,11 +738,13 @@ function answerQuiz(index, choice) {
   if (choice !== quiz.correct) {
     mistakes += 1;
     note.textContent = quiz.options[choice].hint;
+    sound.play("wrong");
     spend(RULES.power.wrongQuiz, `大型イベントの問題を間違えた −${RULES.power.wrongQuiz}%`);
     return;
   }
   const strong = document.createElement("b");
   strong.textContent = "正解。";
+  sound.play("correct");
   note.replaceChildren(strong, ` ${quiz.answer}`);
   for (const button of byId("be-choices").children) button.disabled = true;
   byId("be-return").hidden = false;
@@ -682,7 +768,9 @@ function end(nextState, heading, detail) {
   hideToast();
   setState(nextState);
   cancelAnimationFrame(request);
-  showStatus(heading, detail, nextState === "failed");
+  showStatus(heading, detail, nextState === "failed", nextState === "failed" ? "fail" : "success");
+  sound.play(nextState === "failed" ? "fail" : "success");
+  sound.stopAll();
   start.disabled = true;
   start.textContent = "走行終了";
   reset.focus();
@@ -711,6 +799,7 @@ start.addEventListener("click", () => {
     setInputsDisabled(true);
     return;
   }
+  sound.start();
   if (state === "ready") {
     accident = chooseAccident();
     accidentPick.disabled = true;
@@ -732,6 +821,30 @@ window.addEventListener("resize", () => {
   if (state === "bigevent") { fitFrame(events[activeEvent].data.media.zoom); placeZoom(events[activeEvent].data.media.zoom); }
 });
 giveUp.addEventListener("click", revealAnswer);
+byId("minimap-btn").addEventListener("click", () => toggleMap());
+byId("map-close").addEventListener("click", () => toggleMap(false));
+const soundButton = byId("sound");
+const showSound = () => {
+  soundButton.textContent = sound.enabled ? "音 オン" : "音 オフ";
+  soundButton.setAttribute("aria-pressed", sound.enabled);
+};
+showSound();
+soundButton.addEventListener("click", () => { sound.start(); sound.toggle(); showSound(); });
+
+// Keys: 1-3 choose, M map, Esc close the map, Space pause or resume.
+document.addEventListener("keydown", (event) => {
+  const typing = ["TEXTAREA", "INPUT", "SELECT"].includes(event.target.tagName);
+  if (event.key === "Escape") { toggleMap(false); return; }
+  if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.key === "m" || event.key === "M") { toggleMap(); return; }
+  if (event.key === " " && event.target.tagName !== "BUTTON" && !start.disabled) { event.preventDefault(); start.click(); return; }
+  const number = Number(event.key);
+  if (number >= 1 && number <= 9) {
+    const list = state === "bigevent" ? byId("be-choices") : state === "planning" ? choices : null;
+    const button = list?.children[number - 1];
+    if (button && !button.disabled) button.click();
+  }
+});
 answer.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) submitAnswer();
 });
@@ -743,6 +856,8 @@ reset.addEventListener("click", () => {
   mistakes = 0;
   power = RULES.power.start;
   resolved = new Set();
+  mmHeading = null;
+  toggleMap(false);
   hideToast();
   byId("big-event").hidden = true;
   accidentPick.disabled = false;
@@ -773,6 +888,7 @@ try {
   energy = buildEnergy();
   byId("progress").max = duration;
   drawMap();
+  buildTimeline();
   drawHud();
   renderPlayback();
   renderPower("—");

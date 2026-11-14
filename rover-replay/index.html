@@ -16,12 +16,43 @@
       <div class="brand"><span class="planet" aria-hidden="true"></span><div>
         <p class="eyebrow">MARS 2020 / PERSEVERANCE</p><h1>Jezero Traverse</h1>
       </div></div>
-      <p class="pill mono"><span>左 Navcam</span> <span id="frame-info">—</span> · <span id="capture">撮影データを読み込み中</span></p>
+
+      <div id="power" class="power" data-level="ok" role="meter" aria-label="電力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+        <div class="power-head"><span class="power-label">電力</span><span id="power-value" class="mono power-value">100%</span></div>
+        <div class="power-track" aria-hidden="true"><span id="power-bar"></span></div>
+        <span id="power-note" class="mono power-note">—</span>
+        <span id="power-float" class="power-float mono" aria-hidden="true"></span>
+      </div>
+
+      <div class="top-right">
+        <p class="pill mono"><span id="frame-info">—</span> · <span id="capture">撮影データを読み込み中</span></p>
+        <div class="buttons">
+          <button id="sound" class="icon-btn" aria-pressed="true" title="音のオン・オフ">音 オン</button>
+          <button id="start" class="primary" disabled>走行開始</button>
+          <button id="reset" disabled>最初から</button>
+        </div>
+      </div>
     </header>
 
     <div class="middle">
+      <button id="minimap-btn" class="minimap" aria-label="走行マップを大きく表示（M キー）" title="走行マップを開く（M）">
+        <svg id="minimap" viewBox="-50 -50 100 100" aria-hidden="true">
+          <defs><clipPath id="mm-clip"><circle r="44"/></clipPath></defs>
+          <circle r="44" class="mm-bg"/>
+          <g clip-path="url(#mm-clip)"><g id="mm-content"><use href="#map-content"/></g></g>
+          <circle r="44" class="mm-shade"/>
+          <g id="mm-ring" class="mm-ring">
+            <circle r="46.5" class="mm-rim"/>
+            <g id="mm-ticks"></g>
+            <g id="mm-north"><text y="-41" class="mm-n">N</text></g>
+          </g>
+          <path d="M0 -7 L5 5 L0 2.5 L-5 5 Z" class="mm-rover"/>
+        </svg>
+        <span class="minimap-label mono"><span id="mm-dist">0 m</span> · M で地図</span>
+      </button>
+
       <section class="glass hud telemetry" aria-labelledby="hud-title">
-        <header class="hud-head"><h2 id="hud-title">ローバーの状態</h2><span class="muted">計画中は判断に使う項目が光ります</span></header>
+        <header class="hud-head"><h2 id="hud-title">ローバーの状態</h2><span class="muted">判断に使う項目が光ります</span></header>
 
         <div class="widget" data-key="clock sun">
           <div class="w-head"><span>現地時刻と太陽</span><b id="h-clock" class="mono">—</b></div>
@@ -78,59 +109,60 @@
           <p class="w-note desc">いま表示中の画像の、撮影から地球で受信するまでの時間</p>
         </div>
       </section>
-
-      <section class="glass mapbox" aria-labelledby="map-title">
-        <header class="hud-head"><h2 id="map-title">走行マップ</h2><span class="mono muted">MRO / HiRISE · ↑N</span></header>
-        <figure class="map-wrap">
-          <svg id="map" role="img" aria-label="ジェゼロの衛星画像、走行線、計画地点、ローバー位置"></svg>
-          <figcaption class="map-key"><span class="rover-key"></span>ローバー <span class="incident-key"></span>計画地点</figcaption>
-        </figure>
-      </section>
     </div>
 
-    <div id="toast" class="glass toast" role="status" hidden></div>
+    <div class="dock">
+      <div id="toast" class="glass toast" role="status" hidden></div>
 
-    <section class="glass controls" aria-labelledby="mission-title">
-      <div class="mission-meta">
-        <div><p class="eyebrow">MISSION CONTROL</p><h2 id="mission-title">走行を開始</h2></div>
-        <div id="power" class="power" data-level="ok">
-          <span class="power-label">電力</span>
-          <span class="power-track" aria-hidden="true"><span id="power-bar"></span></span>
-          <span id="power-value" class="mono">100%</span>
-          <span id="power-note" class="mono power-note">—</span>
+      <section class="glass controls" aria-labelledby="mission-title" data-kind="info">
+        <div class="card-head">
+          <span id="mission-kind" class="kind mono">MISSION CONTROL</span>
+          <span class="mono clock"><span id="elapsed">00:00</span> / <span id="duration">00:36</span></span>
         </div>
-        <div class="mono clock"><span id="elapsed">00:00</span> / <span id="duration">00:36</span></div>
-      </div>
-      <progress id="progress" value="0" max="36" aria-label="ゲームの進行"></progress>
-      <div class="mission-bottom">
-        <div class="mission-main">
-          <p id="message" role="status">各 sol の走行の前に、データを見て計画を送ってください。電力が尽きると失敗です。</p>
-          <dl id="facts" class="facts" hidden></dl>
-          <p id="rule" class="rule" hidden></p>
-          <div id="choices" class="choices" hidden></div>
-          <div id="freeform" class="freeform" hidden>
-            <label for="answer" class="visually-hidden">対応策</label>
-            <textarea id="answer" rows="2" placeholder="対応策を書いてください（例：〜して、〜する）"></textarea>
-            <div class="choices"><button id="submit" class="primary">回答を送る</button><button id="give-up">答えを見る（電力 −20%）</button></div>
-          </div>
+        <h2 id="mission-title">走行を開始</h2>
+        <p id="message" role="status">各 sol の走行の前に、データを見て計画を送ってください。電力が尽きると失敗です。</p>
+        <dl id="facts" class="facts" hidden></dl>
+        <p id="rule" class="rule" hidden></p>
+        <div id="choices" class="choices" hidden></div>
+        <div id="freeform" class="freeform" hidden>
+          <label for="answer" class="visually-hidden">対応策</label>
+          <textarea id="answer" rows="2" placeholder="対応策を書いてください（例：〜して、〜する）"></textarea>
+          <div class="freeform-actions"><button id="submit" class="primary">回答を送る（Ctrl+Enter）</button><button id="give-up">答えを見る（電力 −20%）</button></div>
         </div>
-        <div class="side">
+        <div class="card-foot">
           <label class="pick mono">アクシデント（テスト版）
             <select id="accident-pick"><option value="">ランダム</option></select>
           </label>
-          <div class="buttons"><button id="start" class="primary" disabled>走行開始</button><button id="reset" disabled>最初から</button></div>
+          <span class="keys mono">1〜3：選択　M：地図　Space：一時停止</span>
         </div>
+      </section>
+
+      <div class="timeline" aria-hidden="true">
+        <progress id="progress" value="0" max="36" aria-label="ゲームの進行"></progress>
+        <div id="timeline-marks" class="timeline-marks"></div>
       </div>
+
       <footer class="sources">
-        <span>実画像・走行線・傾き・時刻・日照は NASA の記録。判断の基準値と電力はゲーム用の設定。時間はデモ用に圧縮。</span>
+        <span>実画像・走行線・傾き・時刻・日照・音は NASA の記録。判断の基準値と電力はゲーム用の設定。時間はデモ用に圧縮。</span>
         <nav aria-label="データ出典">
           <a href="https://mars.nasa.gov/mars2020/multimedia/raw-images/">NASA Navcam</a>
           <a href="https://science.nasa.gov/mission/mars-2020-perseverance/location-map/">JPL 走行線</a>
           <a href="https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars">Mars Trek</a>
           <a href="https://pds-geosciences.wustl.edu/missions/mars2020/places.htm">PDS PLACES</a>
           <a href="https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/">PDS Navcam ラベル</a>
+          <a href="https://science.nasa.gov/resource/sounds-of-perseverance-mars-rover-driving-sol-16-90-second-highlights/">NASA 走行音</a>
+          <a href="https://science.nasa.gov/resource/first-audio-recording-of-sounds-on-mars/">NASA 火星の風</a>
         </nav>
       </footer>
+    </div>
+
+    <section id="map-overlay" class="map-overlay glass" aria-labelledby="map-title" hidden>
+      <header class="hud-head"><h2 id="map-title">走行マップ</h2><span class="mono muted">MRO / HiRISE · ↑N · M か Esc で閉じる</span></header>
+      <figure class="map-wrap">
+        <svg id="map" role="img" aria-label="ジェゼロの衛星画像、走行線、イベント地点、ローバー位置"></svg>
+        <figcaption class="map-key"><span class="rover-key"></span>ローバー <span class="incident-key"></span>走行計画 <span class="accident-key"></span>アクシデント <span class="big-key"></span>大型イベント</figcaption>
+      </figure>
+      <button id="map-close">閉じる</button>
     </section>
   </div>
 
