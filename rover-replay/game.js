@@ -1,6 +1,8 @@
-import {gradeAnswer} from "./grader.js";
-import {sound} from "./audio.js";
-import {showResult, hideResult} from "./result.js";
+import {gradeAnswer} from "./grader.js?v=2";
+import {sound} from "./audio.js?v=2";
+import {showResult, hideResult} from "./result.js?v=4";
+import {locale, tr} from "./locale.js";
+import {englishIncident, englishEvent} from "./content-en.js";
 
 const byId = (id) => document.getElementById(id);
 const map = byId("map");
@@ -19,8 +21,14 @@ const giveUp = byId("give-up");
 const accidentPick = byId("accident-pick");
 const controls = document.querySelector(".controls");
 const MM_SCALE = 0.55; // minimap zoom: map pixels to minimap units (about 24 m across the radius)
-const KIND_LABELS = {info: "MISSION CONTROL", plan: "走行計画", accident: "アクシデント", result: "結果",
-  success: "ミッション成功", fail: "ミッション失敗"};
+const KIND_LABELS = {
+  info: ["MISSION CONTROL", "MISSION CONTROL"],
+  plan: ["走行計画", "Drive plan"],
+  accident: ["アクシデント", "Incident"],
+  result: ["結果", "Result"],
+  success: ["ミッション成功", "Mission complete"],
+  fail: ["ミッション失敗", "Mission failed"],
+};
 
 // Game settings. The values each decision is judged against come from NASA data
 // (assets/mission.json); these thresholds and the power model are invented.
@@ -90,8 +98,8 @@ const deg = (value, digits = 1) => `${value.toFixed(digits)}°`;
 const signed = (value, unit) => `${value >= 0 ? "+" : "−"}${Math.abs(value).toFixed(2)} ${unit}`;
 const hoursMinutes = (ms) => {
   const minutes = Math.round(ms / 60_000);
-  if (minutes < 60) return `${minutes}分`;
-  return `${Math.floor(minutes / 60)}時間${minutes % 60 ? `${minutes % 60}分` : ""}`;
+  if (minutes < 60) return tr(`${minutes}分`, `${minutes} min`);
+  return tr(`${Math.floor(minutes / 60)}時間${minutes % 60 ? `${minutes % 60}分` : ""}`, `${Math.floor(minutes / 60)} h${minutes % 60 ? ` ${minutes % 60} min` : ""}`);
 };
 
 function distanceAt(time) {
@@ -137,24 +145,24 @@ function buildPlans() {
     const steep = worst >= RULES.tiltLimitDeg;
     return {
       kind: "tilt", focus: ["pitch", "roll", "elevation"],
-      title: `Sol ${drive.sol} の走行計画：地形の傾き`,
-      prompt: "PLACES に記録された、この区間の傾きを見て走り方を決めてください。",
+      title: tr(`Sol ${drive.sol} の走行計画：地形の傾き`, `Sol ${drive.sol} drive plan: Terrain slope`),
+      prompt: tr("走行区間の傾きの情報から走り方を決めてください。", "Use the slope data for this stretch to decide how to drive."),
       facts: [
-        ["区間", `Drive ${drive.fromDrive} → ${drive.toDrive}（${length(drive)}）`],
-        ["最大の傾き", `前後 ${deg(Math.abs(s.pitch))}・左右 ${deg(Math.abs(s.roll))}（Drive ${s.drive}）`],
-        ["標高差", signed(drive.climbM, "m")],
+        [tr("区間の長さ", "Distance"), length(drive)],
+        [tr("最大の傾き", "Maximum slope"), tr(`前後 ${deg(Math.abs(s.pitch))}・左右 ${deg(Math.abs(s.roll))}`, `Pitch ${deg(Math.abs(s.pitch))} · Roll ${deg(Math.abs(s.roll))}`)],
+        [tr("標高差", "Elevation change"), signed(drive.climbM, "m")],
       ],
-      rule: `傾きが ${RULES.tiltLimitDeg}° 以上の地点を含む区間は、視覚オドメトリ（カメラで実際の移動量を測る機能）で滑りを確かめながら走る。`,
+      rule: tr(`傾きが ${RULES.tiltLimitDeg}° 以上の地点を含む区間は、視覚オドメトリ（カメラで実際の移動量を測る機能）で滑りを確かめながら走る。`, `If any point has a slope of ${RULES.tiltLimitDeg}° or more, use visual odometry (camera-based tracking) to check for wheel slip as you drive.`),
       options: [
-        {label: "通常走行で進む",
-          hint: `最大 ${deg(worst)} の傾きがあり、基準の ${RULES.tiltLimitDeg}° 以上です。`},
-        {label: "視覚オドメトリで滑りを確かめながら進む",
-          hint: `最大の傾きは ${deg(worst)} で、基準の ${RULES.tiltLimitDeg}° 未満です。`},
-        {label: "この区間の走行を見送る",
-          hint: `${deg(worst)} は走行を見送るほどの傾きではありません。`},
+        {label: tr("通常走行で進む", "Drive normally"),
+          hint: tr(`最大 ${deg(worst)} の傾きがあり、基準の ${RULES.tiltLimitDeg}° 以上です。`, `The maximum slope is ${deg(worst)}, at or above the ${RULES.tiltLimitDeg}° threshold.`)},
+        {label: tr("視覚オドメトリで滑りを確かめながら進む", "Use visual odometry to check for wheel slip"),
+          hint: tr(`最大の傾きは ${deg(worst)} で、基準の ${RULES.tiltLimitDeg}° 未満です。`, `The maximum slope is ${deg(worst)}, below the ${RULES.tiltLimitDeg}° threshold.`)},
+        {label: tr("この区間の走行を見送る", "Skip this drive"),
+          hint: tr(`${deg(worst)} は走行を見送るほどの傾きではありません。`, `A slope of ${deg(worst)} is manageable on this drive.`)},
       ],
       correct: steep ? 1 : 0,
-      record: `実際の記録：Sol ${drive.sol} に ${length(drive)} を約 ${minutes(drive)} 分で走行（LMST ${clock(seconds(drive.startLmst))}〜${clock(seconds(drive.endLmst))}）。`,
+      record: tr(`実際の記録：Sol ${drive.sol} に ${length(drive)} を約 ${minutes(drive)} 分で走行（LMST ${clock(seconds(drive.startLmst))}〜${clock(seconds(drive.endLmst))}）。`, `Mission record: The rover drove ${length(drive)} on Sol ${drive.sol} in about ${minutes(drive)} min (LMST ${clock(seconds(drive.startLmst))}–${clock(seconds(drive.endLmst))}).`),
     };
   };
 
@@ -168,27 +176,27 @@ function buildPlans() {
     const actualMinutes = minutes(drive);
     return {
       kind: "time", focus: ["clock", "sun"],
-      title: `Sol ${drive.sol} の走行計画：時刻と日照`,
-      prompt: "前回の走行の速さから終わる時刻を見積もり、どこまで走るかを決めてください。",
+      title: tr(`Sol ${drive.sol} の走行計画：時刻と日照`, `Sol ${drive.sol} drive plan: Time and sunlight`),
+      prompt: tr("sol 16の走行速さから今日の予定走行が終わる時刻を見積もりどこまで走るか決めてください。", "Use the Sol 16 driving speed to estimate when today’s planned drive would end. How far should the rover go?"),
       facts: [
-        ["走行開始", `LMST ${clock(startAt)}`],
-        ["予定の距離", length(drive)],
-        ["前回の速さ", `${pace.toFixed(2)} m/分（Sol ${previous.sol} の実績）`],
-        ["終了の見込み", `LMST ${clock(finish(drive.lengthM))}`],
-        ["太陽高度", `${deg(sun.sunElevation)}（同じ sol の LMST ${clock(seconds(sun.lmst))} の画像）`],
+        [tr("走行開始", "Drive start time"), `LMST ${clock(startAt)}`],
+        [tr("走行の終了見時刻", "Estimated finish time"), `LMST ${clock(finish(drive.lengthM))}`],
+        [tr("予定の距離", "Planned distance"), length(drive)],
+        [tr("前回の走行速さ", "Previous driving speed"), tr(`${pace.toFixed(2)} m/分`, `${pace.toFixed(2)} m/min`)],
+        [tr("太陽高度", "Sun elevation"), deg(sun.sunElevation)],
       ],
-      rule: `走行は LMST ${RULES.driveEndLimit} までに終える（夕方は影が長くなり、画像で障害物を見分けにくくなる想定）。`,
+      rule: tr(`走行は LMST ${RULES.driveEndLimit} までに終える（夕方は影が長くなり、画像で障害物を見分けにくくなる想定）。`, `Finish by ${RULES.driveEndLimit} LMST. Longer afternoon shadows are assumed to make obstacles harder to spot in images.`),
       options: [
-        {label: `全区間（${length(drive)}）を走る`,
-          hint: `全区間だと LMST ${clock(finish(drive.lengthM))} に終わる見込みで、${RULES.driveEndLimit} を過ぎます。`},
-        {label: "半分で止め、残りは次の sol に回す",
-          hint: correct === 0 ? `全区間でも LMST ${clock(finish(drive.lengthM))} に終わる見込みです。`
-            : `半分でも LMST ${clock(finish(drive.lengthM / 2))} までかかる見込みです。`},
-        {label: "この sol の走行を取りやめる",
-          hint: `LMST ${RULES.driveEndLimit} までに走れる見込みがあります。`},
+        {label: tr(`全区間（${length(drive)}）を走る`, `Drive the full ${length(drive)}`),
+          hint: tr(`全区間だと LMST ${clock(finish(drive.lengthM))} に終わる見込みで、${RULES.driveEndLimit} を過ぎます。`, `The full drive would finish at ${clock(finish(drive.lengthM))} LMST, after the ${RULES.driveEndLimit} cutoff.`)},
+        {label: tr("半分で止め、残りは次の sol に回す", "Stop halfway and finish the next sol"),
+          hint: correct === 0 ? tr(`全区間でも LMST ${clock(finish(drive.lengthM))} に終わる見込みです。`, `The full drive would finish at ${clock(finish(drive.lengthM))} LMST.`)
+            : tr(`半分でも LMST ${clock(finish(drive.lengthM / 2))} までかかる見込みです。`, `Even half the route would take until ${clock(finish(drive.lengthM / 2))} LMST.`)},
+        {label: tr("この sol の走行を取りやめる", "Cancel the drive for this sol"),
+          hint: tr(`LMST ${RULES.driveEndLimit} までに走れる見込みがあります。`, `There is time to drive before ${RULES.driveEndLimit} LMST.`)},
       ],
       correct,
-      record: `実際の記録：Sol ${drive.sol} の走行は LMST ${clock(startAt)}〜${clock(seconds(drive.endLmst))}（約 ${actualMinutes} 分。見込みとの差 ${Math.round(actualMinutes - (drive.lengthM / pace))} 分）。`,
+      record: tr(`実際の記録：Sol ${drive.sol} の走行は LMST ${clock(startAt)}〜${clock(seconds(drive.endLmst))}（約 ${actualMinutes} 分。見込みとの差 ${Math.round(actualMinutes - (drive.lengthM / pace))} 分）。`, `Mission record: The Sol ${drive.sol} drive ran from ${clock(startAt)} to ${clock(seconds(drive.endLmst))} LMST (about ${actualMinutes} min, a difference of ${Math.round(actualMinutes - (drive.lengthM / pace))} min from the estimate).`),
     };
   };
 
@@ -201,25 +209,24 @@ function buildPlans() {
     const arrived = received < driveStart;
     return {
       kind: "downlink", focus: ["delay"],
-      title: `Sol ${drive.sol} の走行計画：画像の到着`,
-      prompt: "前回の走行の終点で撮った画像が地球に届いているかを確かめ、計画の立て方を決めてください。",
+      title: tr(`Sol ${drive.sol} の走行計画：画像の到着`, `Sol ${drive.sol} drive plan: Image downlink`),
+      prompt: tr("前回の走行の終点で撮った画像が地球に届いているかを確かめ、計画の立て方を決めてください。", "Check whether the image taken at the end of the previous drive reached Earth, then decide how to plan the next drive."),
       facts: [
-        ["前回終点の画像", `Sol ${last.sol} の LMST ${clock(seconds(last.env.lmst))} に撮影`],
-        ["地球での受信", `撮影の ${hoursMinutes(received - captured)} 後`],
-        ["次の走行", arrived ? `Sol ${drive.sol}（受信の約 ${Math.round((driveStart - received) / 3_600_000)} 時間後）`
-          : `Sol ${drive.sol}（受信より前）`],
+        [tr("前回終点の画像", "Image from the previous stop"), tr(`Sol ${last.sol} の LMST ${clock(seconds(last.env.lmst))} に撮影`, `Captured on Sol ${last.sol} at ${clock(seconds(last.env.lmst))} LMST`)],
+        [tr("地球での受信", "Received on Earth"), tr(`撮影の ${hoursMinutes(received - captured)} 後`, `${hoursMinutes(received - captured)} after capture`)],
+        [tr("次の走行", "Next drive"), arrived ? tr(`Sol ${drive.sol}（受信の約 ${Math.round((driveStart - received) / 3_600_000)} 時間後）`, `Sol ${drive.sol} (about ${Math.round((driveStart - received) / 3_600_000)} h after receipt)`)
+          : tr(`Sol ${drive.sol}（受信より前）`, `Sol ${drive.sol} (before the image arrived)`)],
       ],
-      rule: "前方の地形を画像で確かめてから、次の走行を計画する。",
       options: [
-        {label: "受信した終点画像で前方を確かめ、計画を送る",
-          hint: "終点の画像は、次の走行の時点でまだ地球に届いていません。"},
-        {label: "画像を待たず、前回と同じ距離を指示する",
-          hint: "前方の地形を確かめないまま走らせることになります。"},
-        {label: "画像が届くまで計画を延期する",
-          hint: `画像は撮影の ${hoursMinutes(received - captured)} 後に届いており、次の走行に間に合います。`},
+        {label: tr("受信した終点画像で前方を確かめ、計画を送る", "Check the terrain in the received image and send the plan"),
+          hint: tr("終点の画像は、次の走行の時点でまだ地球に届いていません。", "The image had yet to reach Earth when the next drive began.")},
+        {label: tr("画像を待たず、前回と同じ距離を指示する", "Send a plan for the same distance without waiting for the image"),
+          hint: tr("前方の地形を確かめないまま走らせることになります。", "The rover would enter terrain the team has yet to check.")},
+        {label: tr("画像が届くまで計画を延期する", "Wait for the image before planning the drive"),
+          hint: tr(`画像は撮影の ${hoursMinutes(received - captured)} 後に届いており、次の走行に間に合います。`, `The image arrived ${hoursMinutes(received - captured)} after capture, in time for the next drive.`)},
       ],
       correct: arrived ? 0 : 2,
-      record: `実際の記録：Sol ${drive.sol} に ${length(drive)} を走行（LMST ${clock(seconds(drive.startLmst))}〜${clock(seconds(drive.endLmst))}）。`,
+      record: tr(`実際の記録：Sol ${drive.sol} に ${length(drive)} を走行（LMST ${clock(seconds(drive.startLmst))}〜${clock(seconds(drive.endLmst))}）。`, `Mission record: The rover drove ${length(drive)} on Sol ${drive.sol} (LMST ${clock(seconds(drive.startLmst))}–${clock(seconds(drive.endLmst))}).`),
     };
   };
 
@@ -315,8 +322,12 @@ function toggleMap(open = byId("map-overlay").hidden) {
   if (open) sound.play("open");
 }
 
-const DIRECTIONS = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"];
-const direction = (azimuth) => DIRECTIONS[Math.round((((azimuth % 360) + 360) % 360) / 45) % 8];
+const DIRECTIONS = [["北", "N"], ["北東", "NE"], ["東", "E"], ["南東", "SE"], ["南", "S"], ["南西", "SW"], ["西", "W"], ["北西", "NW"]];
+function bearing(azimuth) {
+  const index = Math.round((((azimuth % 360) + 360) % 360) / 45) % 8;
+  const [ja, en] = DIRECTIONS[index];
+  return tr(`${ja}（${Math.round(azimuth)}°）`, `${en} (${Math.round(azimuth)}°)`);
+}
 const DAY_START = 6 * 3600, DAY_LENGTH = 12 * 3600; // the day bar spans LMST 06:00-18:00
 const dayPercent = (secs) => Math.min(100, Math.max(0, (secs - DAY_START) / DAY_LENGTH * 100));
 const TILT_ICON_SCALE = 4; // tilts are a few degrees; exaggerate the drawing so they show
@@ -328,9 +339,13 @@ function setText(id, value) {
 }
 
 // Parts of the HUD that do not change while playing.
+function renderDriveCutoff() {
+  byId("h-limit").querySelector("i").textContent = tr(`走行終了の基準 ${RULES.driveEndLimit}`, `Drive cutoff ${RULES.driveEndLimit}`);
+}
+
 function drawHud() {
   byId("h-limit").style.left = `${dayPercent(seconds(RULES.driveEndLimit))}%`;
-  byId("h-limit").querySelector("i").textContent = `走行終了の基準 ${RULES.driveEndLimit}`;
+  renderDriveCutoff();
   byId("h-tilt-limit").style.left = "50%"; // the bar spans 0 to twice the limit
   setText("h-tilt-rule", `${RULES.tiltLimitDeg}°`);
   const ticks = byId("h-ticks");
@@ -383,8 +398,8 @@ function renderTelemetry(distance, frame) {
   const heading = ((pose.yaw % 360) + 360) % 360;
   byId("h-heading-arrow").setAttribute("transform", `rotate(${heading})`);
   byId("h-sun-mark").setAttribute("transform", `rotate(${env.sunAzimuth})`);
-  setText("h-heading", `${direction(heading)}（${Math.round(heading)}°）`);
-  setText("h-sun-az", `${direction(env.sunAzimuth)}（${Math.round(env.sunAzimuth)}°）`);
+  setText("h-heading", bearing(heading));
+  setText("h-sun-az", bearing(env.sunAzimuth));
 
   const delay = Date.parse(env.earthReceived) - Date.parse(env.utc);
   setText("h-delay", hoursMinutes(delay));
@@ -398,9 +413,9 @@ function renderPlayback() {
   if (index !== frameIndex) {
     photo.src = `assets/${frame.name}`;
     byId("frame-info").textContent = `${index + 1} / ${frames.length}`;
-    byId("capture").textContent = `SOL ${frame.sol} · LMST ${clock(seconds(frame.env.lmst))} · DRIVE ${frame.drive}`;
     frameIndex = index;
   }
+  setText("capture", `SOL ${frame.sol} · LMST ${clock(seconds(frame.env.lmst))} · DRIVE ${frame.drive}`);
   const distance = distanceAt(elapsed);
   const [x,y] = positionAt(distance);
   marker.setAttribute("cx", x);
@@ -441,7 +456,9 @@ function setState(next) {
   state = next;
   const shown = state === "paused" ? pausedFrom : state;
   const mode = {running: "drive", planning: "plan", accident: "accident", bigevent: "bigevent"}[shown] ?? "panel";
-  document.querySelector(".screen").dataset.mode = mode;
+  const screen = document.querySelector(".screen");
+  screen.dataset.mode = mode;
+  screen.toggleAttribute("data-ready", state === "ready");
   sound.scene(state === "paused" ? "paused" : mode);
 }
 
@@ -455,7 +472,7 @@ function toast(heading, text, link) {
     anchor.href = link.url;
     anchor.target = "_blank";
     anchor.rel = "noopener";
-    anchor.textContent = `出典：${link.label}`;
+    anchor.textContent = tr(`出典：${link.label}`, `Source: ${link.label}`);
     box.append(" ", anchor);
   }
   box.hidden = false;
@@ -506,7 +523,7 @@ function spend(amount, note) {
   if (note && Math.abs(power - before) >= 1) floatPower(power - before);
   if (power <= 25 && power > 0 && ACTIVE.includes(state)) sound.lowWarning();
   if (power <= 0) {
-    end("failed", "ミッション失敗：電力切れ", "電力が尽き、ローバーは動けなくなりました。判断にかかった時間と、間違えた選択の分だけ電力が減ります。");
+    end("failed", tr("ミッション失敗：電力切れ", "Mission failed: Out of power"), tr("電力が尽き、ローバーは動けなくなりました。判断にかかった時間と、間違えた選択の分だけ電力が減ります。", "The rover ran out of power and can no longer move. Time spent deciding and incorrect answers both drain power."));
     return false;
   }
   return true;
@@ -532,7 +549,7 @@ function showStatus(heading, detail, alert = false, kind = alert ? "fail" : "inf
   message.textContent = detail;
   controls.dataset.alert = alert;
   controls.dataset.kind = kind;
-  byId("mission-kind").textContent = KIND_LABELS[kind];
+  byId("mission-kind").textContent = tr(...KIND_LABELS[kind]);
   facts.hidden = rule.hidden = choices.hidden = freeform.hidden = true;
   activeEvent = -1;
   setFocus([]);
@@ -560,18 +577,19 @@ function showPlan(index) {
   sound.play("plan");
   const gain = Math.min(idle * RULES.power.rechargePerSol, RULES.power.start - power);
   if (idle > 0) {
-    spend(-gain, gain > 0 ? `前回の走行から ${idle} sol 休止：MMRTG で充電 +${Math.round(gain)}%`
-      : `前回の走行から ${idle} sol 休止：電力は満タン`);
+    spend(-gain, gain > 0 ? tr(`前回の走行から ${idle} sol 休止：MMRTG で充電 +${Math.round(gain)}%`, `After ${idle} sol(s) idle: radioisotope generator recharged +${Math.round(gain)}%`)
+      : tr(`前回の走行から ${idle} sol 休止：電力は満タン`, `After ${idle} sol(s) idle: power is full`));
   }
   fillFacts(plan.facts);
-  rule.textContent = `判断の基準（ゲーム設定）：${plan.rule}`;
+  rule.textContent = plan.rule ? tr(`ヒント：${plan.rule}`, `Hint: ${plan.rule}`) : "";
   choices.replaceChildren(...plan.options.map((option, choice) => {
     const button = document.createElement("button");
     button.textContent = option.label;
     button.addEventListener("click", () => resolvePlan(index, choice));
     return button;
   }));
-  facts.hidden = rule.hidden = choices.hidden = false;
+  facts.hidden = choices.hidden = false;
+  rule.hidden = !plan.rule;
   setFocus(plan.focus);
 }
 
@@ -579,7 +597,7 @@ function showAccident(index) {
   showStatus(accident.title, accident.situation, true, "accident");
   activeEvent = index;
   sound.play("accident");
-  fillFacts([["回答", "自由記述。考えている間も電力が減ります（Ctrl+Enter でも送信）。"]]);
+  fillFacts([[tr("回答", "Your response"), tr("ひとことで答えられます。考えている間も電力が減ります（Ctrl+Enter でも送信）。", "Answer with a word or short phrase. Power drains while you decide. Press Ctrl+Enter to submit.")]]);
   facts.hidden = false;
   answer.value = "";
   freeform.hidden = false;
@@ -603,8 +621,8 @@ function step(dt) {
     return;
   }
   if (elapsed >= duration) {
-    end("complete", "ミッション成功",
-      `全区間を完走しました。残り電力 ${Math.ceil(power)}%・判断ミス ${mistakes} 回。`);
+    end("complete", tr("ミッション成功", "Mission complete"),
+      tr(`全区間を完走しました。残り電力 ${Math.ceil(power)}%・判断ミス ${mistakes} 回。`, `Route complete. Power remaining: ${Math.ceil(power)}%. Mistakes: ${mistakes}.`));
   }
 }
 
@@ -621,29 +639,30 @@ function resolvePlan(index, choice) {
     button.classList.remove("wrong");
     void button.offsetWidth;
     button.classList.add("wrong");
-    spend(RULES.power.wrongChoice, `判断ミス −${RULES.power.wrongChoice}%`);
+    spend(RULES.power.wrongChoice, tr(`判断ミス −${RULES.power.wrongChoice}%`, `Incorrect decision −${RULES.power.wrongChoice}%`));
     return;
   }
   answered.done = true;
   resolved.add(index);
   setState("running");
   sound.play("correct");
-  showStatus("計画を送信", `${plan.options[choice].label}。${plan.record}`, false, "result");
-  toast("計画を送信", `${plan.options[choice].label}。${plan.record}`);
+  const detail = `${plan.options[choice].label}${tr("。", ". ")}${plan.record}`;
+  showStatus(tr("計画を送信", "Plan sent"), detail, false, "result");
+  toast(tr("計画を送信", "Plan sent"), detail);
   start.focus();
 }
 
 function closeAccident(index, heading) {
   resolved.add(index);
   setState("running");
-  showStatus(heading, `実際の対応（${accident.rover}・${accident.date}）：${accident.answer}`, false, "result");
+  showStatus(heading, tr(`実際の対応（${accident.rover}・${accident.date}）：${accident.answer}`, `What happened (${accident.rover}, ${accident.date}): ${accident.answer}`), false, "result");
   const link = document.createElement("a");
   link.href = accident.source.url;
   link.target = "_blank";
   link.rel = "noopener";
-  link.textContent = `出典：${accident.source.label}`;
+  link.textContent = tr(`出典：${accident.source.label}`, `Source: ${accident.source.label}`);
   message.append(" ", link);
-  toast(heading, `実際の対応（${accident.rover}・${accident.date}）：${accident.answer}`, accident.source);
+  toast(heading, tr(`実際の対応（${accident.rover}・${accident.date}）：${accident.answer}`, `What happened (${accident.rover}, ${accident.date}): ${accident.answer}`), accident.source);
   start.focus();
 }
 
@@ -656,22 +675,22 @@ function submitAnswer() {
   if (result.passed) {
     record.accident.passed = true;
     sound.play("correct");
-    closeAccident(index, `対処成功：${result.matched.map((group) => group.name).join("・")}`);
+    closeAccident(index, tr(`対処成功：${result.matched.map((group) => group.name).join("・")}`, `Incident resolved: ${result.matched.map((group) => group.name).join(", ")}`));
     return;
   }
   mistakes += 1;
-  const hint = result.missing[0]?.hint ?? "もう少し具体的に書いてください。";
-  message.textContent = `${accident.situation}　ヒント：${hint}`;
+  const hint = result.missing[0]?.hint ?? tr("質問に合う言葉をひとことで書いてください。", "Answer the question with a word or short phrase.");
+  message.textContent = tr(`${accident.situation}　ヒント：${hint}`, `${accident.situation} Hint: ${hint}`);
   sound.play("wrong");
-  spend(RULES.power.wrongAnswer, `回答が不十分 −${RULES.power.wrongAnswer}%`);
+  spend(RULES.power.wrongAnswer, tr(`回答が不十分 −${RULES.power.wrongAnswer}%`, `Incomplete answer −${RULES.power.wrongAnswer}%`));
 }
 
 function revealAnswer() {
   if (state !== "accident") return;
   const index = activeEvent;
   record.accident.gaveUp = true;
-  if (!spend(RULES.power.giveUp, `答えを見た −${RULES.power.giveUp}%`)) return;
-  closeAccident(index, "答えを確認");
+  if (!spend(RULES.power.giveUp, tr(`答えを見た −${RULES.power.giveUp}%`, `Answer revealed −${RULES.power.giveUp}%`))) return;
+  closeAccident(index, tr("答えを確認", "Answer revealed"));
 }
 
 function showBigEvent(index) {
@@ -684,7 +703,7 @@ function showBigEvent(index) {
   byId("be-lead").textContent = data.lead;
   byId("be-observed").textContent = data.observed;
   byId("be-note").textContent = data.media.note;
-  byId("be-credit").textContent = `画像：${data.credit}`;
+  byId("be-credit").textContent = tr(`画像：${data.credit}`, `Image credit: ${data.credit}`);
   byId("be-facts").replaceChildren(...data.facts.flatMap(([label, value]) => {
     const term = document.createElement("dt");
     const detail = document.createElement("dd");
@@ -702,7 +721,7 @@ function showBigEvent(index) {
   byId("be-marker").hidden = false;
   byId("be-reticle").hidden = !isSampling;
   byId("be-sampling").hidden = !isSampling;
-  byId("be-question").textContent = data.quiz ? `問題：${data.quiz.question}` : "";
+  byId("be-question").textContent = data.quiz ? tr(`問題：${data.quiz.question}`, `Question: ${data.quiz.question}`) : "";
   byId("be-choices").replaceChildren(...(data.quiz?.options ?? []).map((option, choice) => {
     const button = document.createElement("button");
     button.textContent = option.label;
@@ -731,13 +750,33 @@ function showBigEvent(index) {
   main.src = data.media.still ?? data.media.src;
   if (isSampling) zoom.removeAttribute("src");
   else zoom.src = data.media.src;
-  byId("be-return").textContent = isSampling ? "ミッション結果を見る" : "探査画面に戻る";
+  byId("be-return").textContent = isSampling ? tr("ミッション結果を見る", "View mission report") : tr("探査画面に戻る", "Return to exploration");
   byId("big-event").hidden = false;
   layout();
 }
 
-let samplingTimer;
+let bigEventTimer;
 let samplingPlayback = 0;
+
+function showBigEventResult(data) {
+  const isSampling = Boolean(data.sampling);
+  const banner = byId("be-success");
+  byId("be-message").textContent = "";
+  banner.textContent = isSampling ? tr("採取成功", "Sample collected") : tr("正解", "Correct");
+  banner.hidden = false;
+  byId("be-result-title").textContent = isSampling ? tr("採取した試料", "Collected sample") : tr("つむじ風の高さの見積もり", "How the dust devil’s height was estimated");
+  byId("be-result-summary").textContent = isSampling ? data.sampling.summary : data.quiz.answer;
+  const facts = byId("be-result-facts");
+  facts.hidden = !isSampling;
+  if (isSampling) facts.replaceChildren(...byId("be-facts").cloneNode(true).children);
+  byId("be-result-sources").replaceChildren(...byId("be-sources").cloneNode(true).children);
+  byId("be-result-return").textContent = byId("be-return").textContent;
+
+  bigEventTimer = setTimeout(() => {
+    banner.hidden = true;
+    byId("be-result").showModal();
+  }, 1400);
+}
 
 function updateSamplingAim() {
   const data = events[activeEvent]?.data;
@@ -750,7 +789,7 @@ function updateSamplingAim() {
   const aligned = Math.hypot(x - target.x, y - target.y) <= data.sampling.tolerance;
   byId("be-lock").disabled = !aligned;
   byId("big-event").classList.toggle("be-aligned", aligned);
-  byId("be-message").textContent = aligned ? "照準が合いました。採取を開始できます。" : "照準を調整中";
+  byId("be-message").textContent = aligned ? tr("照準が合いました。採取を開始できます。", "Target aligned. You can start sampling.") : tr("照準を調整中", "Adjusting aim");
 }
 
 function startSampling(event) {
@@ -761,30 +800,29 @@ function startSampling(event) {
   form.hidden = true;
   byId("be-marker").hidden = byId("be-reticle").hidden = true;
   byId("big-event").classList.add("be-coring");
-  byId("be-message").textContent = "採取中…";
+  byId("be-message").textContent = tr("採取中…", "Collecting sample…");
   const {x, y, durationMs, src, still} = data.media;
   byId("be-frame").style.setProperty("--be-zoom-origin", `${x}% ${y}%`);
   const image = byId("be-img");
-  const finish = (message) => {
-    byId("be-message").textContent = message;
-    byId("be-facts").hidden = false;
-    byId("be-return").hidden = false;
-    byId("be-return").focus();
-  };
   image.onload = () => {
-    samplingTimer = setTimeout(() => finish(data.sampling.complete), durationMs);
+    bigEventTimer = setTimeout(() => showBigEventResult(data), durationMs);
   };
   image.onerror = () => {
     image.onload = image.onerror = null;
     image.src = still;
-    finish("映像を読み込めませんでした。NASAの記録から採取結果を確認できます。");
+    byId("be-message").textContent = tr("映像を読み込めませんでした。NASAの記録から採取結果を確認できます。", "The footage could not load. See the NASA record for the sampling result.");
+    byId("be-facts").hidden = false;
+    byId("be-return").hidden = false;
+    byId("be-return").focus();
   };
   // Use a new document-local image URL so a replay begins at the first GIF frame.
   image.src = `${src}?play=${++samplingPlayback}`;
 }
 
 function hideBigEvent() {
-  clearTimeout(samplingTimer);
+  clearTimeout(bigEventTimer);
+  byId("be-success").hidden = true;
+  byId("be-result").close();
   const image = byId("be-img");
   image.onload = image.onerror = null;
   byId("big-event").hidden = true;
@@ -816,25 +854,21 @@ function placeZoom(spec) {
 
 function answerQuiz(index, choice) {
   if (state !== "bigevent" || activeEvent !== index) return;
-  const quiz = events[index].data.quiz;
-  const note = byId("be-message");
+  const data = events[index].data;
+  const {quiz} = data;
   const answered = record.quizzes[index] ??= {wrong: [], done: false};
   if (choice !== quiz.correct) {
     answered.wrong.push(choice);
     mistakes += 1;
-    note.textContent = quiz.options[choice].hint;
+    byId("be-message").textContent = quiz.options[choice].hint;
     sound.play("wrong");
-    spend(RULES.power.wrongQuiz, `大型イベントの問題を間違えた −${RULES.power.wrongQuiz}%`);
+    spend(RULES.power.wrongQuiz, tr(`大型イベントの問題を間違えた −${RULES.power.wrongQuiz}%`, `Incorrect event answer −${RULES.power.wrongQuiz}%`));
     return;
   }
-  const strong = document.createElement("b");
-  strong.textContent = "正解。";
   answered.done = true;
   sound.play("correct");
-  note.replaceChildren(strong, ` ${quiz.answer}`);
   for (const button of byId("be-choices").children) button.disabled = true;
-  byId("be-return").hidden = false;
-  byId("be-return").focus();
+  showBigEventResult(data);
 }
 
 function closeBigEvent() {
@@ -844,13 +878,14 @@ function closeBigEvent() {
   resolved.add(activeEvent);
   hideBigEvent();
   if (data.at === "goal") {
-    end("complete", "ミッション成功",
-      `全区間を完走し、岩石採取イベントを終えました。残り電力 ${Math.ceil(power)}%・判断ミス ${mistakes} 回。`);
+    end("complete", tr("ミッション成功", "Mission complete"),
+      tr(`全区間を完走し、岩石採取イベントを終えました。残り電力 ${Math.ceil(power)}%・判断ミス ${mistakes} 回。`, `Route and sample collection complete. Power remaining: ${Math.ceil(power)}%. Mistakes: ${mistakes}.`));
     return;
   }
   setState("running");
-  showStatus("走行中", "次の計画に備えてください。");
-  toast("大型イベントの観測を記録", `${data.title}（${data.observed.replace("実際の観測：", "")}）`);
+  showStatus(tr("走行中", "Driving"), tr("次の計画に備えてください。", "Get ready for the next drive plan."));
+  const observation = data.observed.replace(tr("実際の観測：", "Observation: "), "");
+  toast(tr("大型イベントの観測を記録", "Major event logged"), tr(`${data.title}（${observation}）`, `${data.title} (${observation})`));
   lastTick = performance.now();
   request = requestAnimationFrame(tick);
 }
@@ -864,7 +899,7 @@ function end(nextState, heading, detail) {
   sound.play(nextState === "failed" ? "fail" : "success");
   sound.stopAll();
   start.disabled = true;
-  start.textContent = "走行終了";
+  start.textContent = tr("走行終了", "Drive ended");
   reset.focus();
   clearTimeout(resultTimer);
   resultTimer = setTimeout(() => showResult(missionSummary(nextState), {onRetry: () => reset.click()}), 1400);
@@ -875,7 +910,6 @@ function missionSummary(nextState) {
   const pick = (type, test, extra) => events.flatMap((event, index) => (event.type === type && test(event) ? [extra(event, index)] : []));
   return {
     complete: nextState === "complete",
-    power: Math.max(0, power),
     plans: pick("plan", () => true, (event, index) => ({plan: event.plan, ...(record.plans[index] ?? {wrong: [], done: false})})),
     accident: accident ? {data: accident, ...record.accident} : null,
     quizzes: pick("big", (event) => event.data.quiz, (event, index) => ({data: event.data, ...(record.quizzes[index] ?? {wrong: [], done: false})})),
@@ -902,7 +936,7 @@ start.addEventListener("click", () => {
     pausedFrom = state;
     setState("paused");
     cancelAnimationFrame(request);
-    start.textContent = "再開";
+    start.textContent = tr("再開", "Resume");
     setInputsDisabled(true);
     return;
   }
@@ -910,12 +944,12 @@ start.addEventListener("click", () => {
   if (state === "ready") {
     accident = chooseAccident();
     accidentPick.disabled = true;
-    showStatus("走行中", "各 sol の走行の前に、データを見て計画を送ってください。");
+    showStatus(tr("走行中", "Driving"), tr("各 sol の走行の前に、データを見て計画を送ってください。", "Review the data before sending each sol’s drive plan."));
     setState("running");
   } else {
     setState(pausedFrom);
   }
-  start.textContent = "一時停止";
+  start.textContent = tr("一時停止", "Pause");
   setInputsDisabled(false);
   lastTick = performance.now();
   request = requestAnimationFrame(tick);
@@ -925,6 +959,11 @@ submit.addEventListener("click", submitAnswer);
 byId("be-sampling").addEventListener("submit", startSampling);
 for (const id of ["be-aim-x", "be-aim-y"]) byId(id).addEventListener("input", updateSamplingAim);
 byId("be-return").addEventListener("click", closeBigEvent);
+byId("be-result-return").addEventListener("click", closeBigEvent);
+byId("be-result").addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeBigEvent();
+});
 byId("toast").addEventListener("click", hideToast);
 window.addEventListener("resize", () => {
   if (state === "bigevent") { fitFrame(events[activeEvent].data.media.zoom); placeZoom(events[activeEvent].data.media.zoom); }
@@ -934,16 +973,18 @@ byId("minimap-btn").addEventListener("click", () => toggleMap());
 byId("map-close").addEventListener("click", () => toggleMap(false));
 const soundButton = byId("sound");
 const showSound = () => {
-  soundButton.textContent = sound.enabled ? "音 オン" : "音 オフ";
+  soundButton.textContent = sound.enabled ? tr("音 オン", "Sound on") : tr("音 オフ", "Sound off");
   soundButton.setAttribute("aria-pressed", sound.enabled);
 };
 showSound();
 soundButton.addEventListener("click", () => { sound.start(); sound.toggle(); });
 window.addEventListener("soundchange", showSound);
+document.addEventListener("localechange", showSound);
 
 // Keys: 1-3 choose, M map, Esc close the map, Space pause or resume.
 document.addEventListener("keydown", (event) => {
   if (document.body.dataset.scene === "voyage") return; // the prologue has its own keys
+  if (byId("be-result").open) return;
   const typing = ["TEXTAREA", "INPUT", "SELECT"].includes(event.target.tagName);
   if (event.key === "Escape") { toggleMap(false); return; }
   if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
@@ -976,11 +1017,32 @@ reset.addEventListener("click", () => {
   hideBigEvent();
   accidentPick.disabled = false;
   start.disabled = false;
-  start.textContent = "走行開始";
-  showStatus("走行を開始", "各 sol の走行の前に、データを見て計画を送ってください。電力が尽きると失敗です。");
+  start.textContent = tr("走行開始", start.dataset.en);
+  showStatus(tr("走行を開始", "Start the drive"), tr("各 sol の走行の前に、データを見て計画を送ってください。電力が尽きると失敗です。", "Review the data before sending each sol’s drive plan. The mission fails if the rover runs out of power."));
   renderPower("—");
   renderPlayback();
   start.focus();
+});
+
+function localizeMission(accidentData, eventData) {
+  accidents = locale === "en" ? accidentData.accidents.map(englishIncident) : accidentData.accidents;
+  bigEvents = locale === "en" ? eventData.events.map(englishEvent) : eventData.events;
+  const selection = accidentPick.value;
+  const random = accidentPick.options[0];
+  accidentPick.replaceChildren(random, ...accidents.map((item) =>
+    new Option(tr(`${item.title}（${item.rover}）`, `${item.title} (${item.rover})`), item.id)
+  ));
+  accidentPick.value = selection;
+  plans = buildPlans();
+  events = buildEvents();
+}
+
+let loadFailed = false;
+function showLoadFailure() {
+  showStatus(tr("データを読み込めません", "Could not load mission data"), tr("ローカルサーバーと assets フォルダを確認してください。", "Check the local server and the assets folder."), true);
+}
+document.addEventListener("localechange", () => {
+  if (loadFailed) showLoadFailure();
 });
 
 try {
@@ -988,17 +1050,13 @@ try {
   for (const response of responses) if (!response.ok) throw new Error(`${response.url}: ${response.status}`);
   const [missionData, accidentData, eventData] = await Promise.all(responses.map((response) => response.json()));
   mission = missionData;
-  accidents = accidentData.accidents;
-  bigEvents = eventData.events;
   if (!mission.poses || !mission.drives || !mission.frames.every((frame) => frame.env)) {
     throw new Error("mission.json lacks environment data; rerun tools/prepare_rover_replay.py");
   }
-  for (const item of accidents) accidentPick.append(new Option(`${item.title}（${item.rover}）`, item.id));
+  duration = mission.frames.at(-1).at;
+  localizeMission(accidentData, eventData);
   const requested = new URLSearchParams(location.search).get("accident");
   if (accidents.some((item) => item.id === requested)) accidentPick.value = requested;
-  duration = mission.frames.at(-1).at;
-  plans = buildPlans();
-  events = buildEvents();
   energy = buildEnergy();
   byId("progress").max = duration;
   drawMap();
@@ -1006,6 +1064,11 @@ try {
   drawHud();
   renderPlayback();
   renderPower("—");
+  document.addEventListener("localechange", () => {
+    localizeMission(accidentData, eventData);
+    renderDriveCutoff();
+    renderPlayback();
+  });
   await Promise.all(mission.frames.map(async (frame) => {
     const image = new Image();
     image.src = `assets/${frame.name}`;
@@ -1015,5 +1078,6 @@ try {
   reset.disabled = false;
 } catch (error) {
   console.error(error);
-  showStatus("データを読み込めません", "ローカルサーバーと assets フォルダを確認してください。", true);
+  loadFailed = true;
+  showLoadFailure();
 }

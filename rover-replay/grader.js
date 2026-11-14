@@ -10,10 +10,18 @@ export function normalize(text) {
 }
 
 export function gradeAnswer(answer, accident) {
-  const text = normalize(answer);
+  const english = accident.language === "en";
+  const normalizeEnglish = (value) => value.normalize("NFKC").toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ").trim();
+  const key = english ? normalizeEnglish : normalize;
+  const text = key(answer);
   const matched = [], missing = [];
   for (const group of accident.groups) {
-    (group.keywords.some((word) => text.includes(normalize(word))) ? matched : missing).push(group);
+    const found = group.keywords.some((word) => {
+      const keyword = key(word);
+      return english ? ` ${text} `.includes(` ${keyword} `) : text.includes(keyword);
+    });
+    (found ? matched : missing).push(group);
   }
   return {passed: text.length > 0 && matched.length >= accident.min, matched, missing};
 }

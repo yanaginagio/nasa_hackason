@@ -8,8 +8,9 @@
 //   steering clear of hazards on NASA's own Jezero hazard map (PIA23970).
 // - Everything drawn on the canvas (craft, stars, planets, effects) is
 //   computer graphics written by AI, and the screen says so (#vg-badge).
-import {sound} from "./audio.js";
+import {sound} from "./audio.js?v=2";
 import {results} from "./results.js";
+import {locale, tr} from "./locale.js";
 
 const $ = (id) => document.getElementById(id);
 const root = $("voyage");
@@ -20,7 +21,10 @@ const params = new URLSearchParams(location.search);
 const CLIP = (name) => `assets/voyage/${name}`;
 
 // ----- facts used on screen -----
-const LAUNCH = {utc: "2020-07-30 11:50 UTC", jst: "日本時間 20:50", place: "ケープカナベラル 第41発射台", rocket: "アトラスV 541"};
+const launchUtc = "2020-07-30 11:50 UTC";
+const launchLocalTime = () => tr("日本時間 20:50", "07:50 EDT");
+const launchSite = () => tr("ケープカナベラル 第41発射台", "Space Launch Complex 41, Cape Canaveral");
+const rocketName = () => tr("アトラスV 541", "Atlas V 541");
 const ROCKET_CAM_LIFTOFF = 1032; // liftoff, in seconds of NASA's launch coverage, on the booster camera
 const ASCENT_SEGMENTS = [[0, 1040], [16, 1116], [46, 1170]]; // [clip time, source time] of each cut
 const ASCENT_EARTH = 46; // the clip shows Earth's horizon from here on
@@ -31,13 +35,13 @@ const MOON_KM = 384_400;
 const DEBRIS = {total: 21_293, debris: 15_214, craft: 6_079}; // NASA ODQN Vol. 24 No. 4 (Nov 2020)
 const FLARE = {cls: "M4.4", peak: "2020-11-29 13:11 UTC", day: 122};
 const SOURCES = {
-  launch: ["NASA 打ち上げ中継映像", "https://images.nasa.gov/details/KSC-20200730-VP-MMS01-0001-Mars_2020_Live_Launch_Coverage_ISO_Broll_String-3254502"],
-  horizons: ["JPL Horizons（探査機 -168）", "https://ssd.jpl.nasa.gov/horizons/"],
-  landing: ["NASA/JPL-Caltech 着陸の実映像", "https://svs.gsfc.nasa.gov/31250"],
-  edl: ["NASA/JPL 着陸の解説", "https://www.jpl.nasa.gov/news/press_kits/mars_2020/landing/mission/"],
-  hazard: ["NASA 危険度マップ PIA23970", "https://science.nasa.gov/photojournal/avoiding-hazards-at-jezero-crater/"],
-  usgs: ["USGS：着陸用の地図", "https://www.usgs.gov/news/national-news-release/mars-2020-mission-be-guided-usgs-astrogeology-maps"],
-  chen: ["Astronomy 誌（Allen Chen の発言）", "https://www.astronomy.com/science/mars-madness-how-perseverance-will-stick-the-landing-during-its-7-minutes-of-terror/"],
+  launch: [["NASA 打ち上げ中継映像", "NASA launch broadcast"], "https://images.nasa.gov/details/KSC-20200730-VP-MMS01-0001-Mars_2020_Live_Launch_Coverage_ISO_Broll_String-3254502"],
+  horizons: [["JPL Horizons（探査機 -168）", "JPL Horizons (spacecraft −168)"], "https://ssd.jpl.nasa.gov/horizons/"],
+  landing: [["NASA/JPL-Caltech 着陸の実映像", "NASA/JPL-Caltech landing footage"], "https://svs.gsfc.nasa.gov/31250"],
+  edl: [["NASA/JPL 着陸の解説", "NASA/JPL landing overview"], "https://www.jpl.nasa.gov/news/press_kits/mars_2020/landing/mission/"],
+  hazard: [["NASA 危険度マップ PIA23970", "NASA hazard map (PIA23970)"], "https://science.nasa.gov/photojournal/avoiding-hazards-at-jezero-crater/"],
+  usgs: [["USGS：着陸用の地図", "USGS landing maps"], "https://www.usgs.gov/news/national-news-release/mars-2020-mission-be-guided-usgs-astrogeology-maps"],
+  chen: [["Astronomy 誌（Allen Chen の発言）", "Astronomy magazine (Allen Chen)"], "https://www.astronomy.com/science/mars-madness-how-perseverance-will-stick-the-landing-during-its-7-minutes-of-terror/"],
 };
 
 // Mission control's call-outs (NASA's caption track), in source seconds of the landing video.
@@ -48,26 +52,26 @@ const CALLOUTS = [
 ];
 const STALE_SECONDS = 15; // a speed reading older than this is shown as unknown
 const PHASES = [
-  {t: -1, label: "大気圏突入"}, {t: 14.4, label: "パラシュート展開"}, {t: 33.3, label: "熱シールド分離"},
-  {t: 109, label: "地形相対航法"}, {t: 126.1, label: "バックシェル分離・回避"}, {t: 172.5, label: "スカイクレーン"}, {t: 189, label: "着地"},
+  {t: -1, label: ["大気圏突入", "Atmospheric entry"]}, {t: 14.4, label: ["パラシュート展開", "Parachute deploy"]}, {t: 33.3, label: ["熱シールド分離", "Heat shield separation"]},
+  {t: 109, label: ["地形相対航法", "Terrain-relative navigation"]}, {t: 126.1, label: ["バックシェル分離・回避", "Backshell separation and divert"]}, {t: 172.5, label: ["スカイクレーン", "Sky crane"]}, {t: 189, label: ["着地", "Touchdown"]},
 ];
-// Japanese subtitles of the call-outs, in source seconds.
+// Localized summaries of the callouts, in source seconds.
 const SUBTITLES = [
-  [12, 14.3, "パラシュートを開く準備。レーダーが地面を見やすいよう、機体を回転させます"],
-  [14.4, 17.7, "パラシュートの展開を確認"],
-  [17.8, 24.4, "パラシュートが開き、大きく減速しています"],
-  [24.5, 31.5, "現在の速さ 秒速450 m、高度 約12 km"],
-  [33.3, 34.8, "熱シールド分離"],
-  [34.8, 44.5, "音速より遅くなり、熱シールドを切り離しました。レーダーとカメラが初めて地表を見ます"],
-  [44.6, 52, "速さ 秒速145 m、高度 約9.5 km"],
-  [106, 108.9, "（約1分を省略）レーダーが地面をとらえ、パラシュートで降下を続けています"],
-  [109, 115, "着陸用の画像認識が、自分の位置を割り出しました（地形相対航法）"],
-  [116, 120.6, "着陸用エンジンの点火時刻が決まりました"],
-  [126.1, 133.6, "バックシェル分離。速さ 秒速83 m、高度 約2.6 km"],
-  [172.5, 178, "スカイクレーン開始。地表から約20 m"],
-  [184.5, 188.9, "探査車からの信号を受信中…"],
-  [189, 192, "着地を確認！"],
-  [192, 198, "パーサヴィアランスは火星に無事着陸。過去の生命の痕跡を探す準備が整いました"],
+  [12, 14.3, ["パラシュートを開く準備。レーダーが地面を見やすいよう、機体を回転させます", "Preparing to deploy the parachute. The spacecraft rolls to give the radar a better view of the ground."]],
+  [14.4, 17.7, ["パラシュートの展開を確認", "Parachute deployment confirmed."]],
+  [17.8, 24.4, ["パラシュートが開き、大きく減速しています", "The parachute has opened and the spacecraft is slowing rapidly."]],
+  [24.5, 31.5, ["現在の速さ 秒速450 m、高度 約12 km", "Speed: 450 m/s. Altitude: about 12 km."]],
+  [33.3, 34.8, ["熱シールド分離", "Heat shield separation"]],
+  [34.8, 44.5, ["音速より遅くなり、熱シールドを切り離しました。レーダーとカメラが初めて地表を見ます", "The spacecraft has gone subsonic and released the heat shield. Radar and cameras get their first look at the surface."]],
+  [44.6, 52, ["速さ 秒速145 m、高度 約9.5 km", "Speed: 145 m/s. Altitude: about 9.5 km."]],
+  [106, 108.9, ["（約1分を省略）レーダーが地面をとらえ、パラシュートで降下を続けています", "(About one minute skipped.) Radar has locked onto the ground. Descent continues under the parachute."]],
+  [109, 115, ["着陸用の画像認識が、自分の位置を割り出しました（地形相対航法）", "The landing vision system has located the spacecraft using terrain-relative navigation."]],
+  [116, 120.6, ["着陸用エンジンの点火時刻が決まりました", "The timing for the landing engines is set."]],
+  [126.1, 133.6, ["バックシェル分離。速さ 秒速83 m、高度 約2.6 km", "Backshell separation. Speed: 83 m/s. Altitude: about 2.6 km."]],
+  [172.5, 178, ["スカイクレーン開始。地表から約20 m", "Sky crane maneuver begins at about 20 m above the surface."]],
+  [184.5, 188.9, ["探査車からの信号を受信中…", "Receiving signals from the rover…"]],
+  [189, 192, ["着地を確認！", "Touchdown confirmed!"]],
+  [192, 198, ["パーサヴィアランスは火星に無事着陸。過去の生命の痕跡を探す準備が整いました", "Perseverance is safely on Mars, ready to look for signs of past life."]],
 ];
 
 // Hazard map (PIA23970): blue safe, yellow caution, red hazard; the green dot is where Perseverance landed.
@@ -113,13 +117,16 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const ease = (t) => t * t * (3 - 2 * t);
 function fmtKm(km) {
+  if (locale === "en") {
+    return km >= 1e6 ? `${(km / 1e6).toFixed(1)} million km` : `${Math.round(km).toLocaleString("en-US")} km`;
+  }
   if (km >= 1e8) return `${(km / 1e8).toFixed(2)}億 km`;
   if (km >= 1e4) return `${Math.round(km / 1e4).toLocaleString("ja-JP")}万 km`;
   return `${Math.round(km).toLocaleString("ja-JP")} km`;
 }
 function fmtDuration(sec) {
   const m = Math.floor(sec / 60), s = Math.round(sec % 60);
-  return m ? `${m}分${String(s).padStart(2, "0")}秒` : `${s}秒`;
+  return m ? tr(`${m}分${String(s).padStart(2, "0")}秒`, `${m} min ${String(s).padStart(2, "0")} s`) : tr(`${s}秒`, `${s} s`);
 }
 const tPlus = (sec) => `T+${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;
 const skipped = (token) => token !== sceneToken;
@@ -161,15 +168,15 @@ function buildMarks() {
 
 // Tell the viewer what they are looking at: NASA footage, or graphics made by AI.
 const BADGES = {
-  nasa: ["real", "実写：NASA の映像"],
-  cg: ["ai", "AI生成のCG（実写ではありません）"],
-  map: ["mix", "地図：NASA（PIA23970）／機体と演出：AI生成のCG"],
+  nasa: ["real", "実写：NASA の映像", "NASA footage"],
+  cg: ["ai", "AI生成のCG（実写ではありません）", "AI-generated graphics"],
+  map: ["mix", "地図：NASA（PIA23970）／機体と演出：AI生成のCG", "NASA map (PIA23970) · AI-generated spacecraft and effects"],
 };
 function badge(kind) {
   const el = $("vg-badge");
-  const [cls, text] = BADGES[kind];
+  const [cls, ja, en] = BADGES[kind];
   el.dataset.kind = cls;
-  el.textContent = text;
+  el.textContent = tr(ja, en);
 }
 
 function card({kind = "info", label = "MISSION CONTROL", title = "", message = "", facts = [], note = "", sources = [], actions = []} = {}) {
@@ -190,8 +197,8 @@ function card({kind = "info", label = "MISSION CONTROL", title = "", message = "
   }));
   $("vg-note").hidden = !note;
   $("vg-note").textContent = note;
-  $("vg-src").replaceChildren(...sources.map(([text, href]) => {
-    const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; a.textContent = text;
+  $("vg-src").replaceChildren(...sources.map(([labels, href]) => {
+    const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; a.textContent = tr(...labels);
     return a;
   }));
   $("vg-actions").hidden = !actions.length;
@@ -265,7 +272,7 @@ function renderSpeed() {
   const button = $("vg-speed");
   button.hidden = stage === "title" || stage === "arrival" || (trn && trn.state === "play");
   button.textContent = `×${speedMul}`;
-  button.setAttribute("aria-label", `再生の速さ ${speedMul}倍（押すと切り替え）`);
+  button.setAttribute("aria-label", tr(`再生の速さ ${speedMul}倍（押すと切り替え）`, `Playback speed: ${speedMul}×. Activate to change.`));
 }
 let videoBaseRate = 1;
 function applyRate() {
@@ -316,14 +323,14 @@ function renderCruise(value) {
   const total = data.days.at(-1).pathKm;
   renderOrbit(value);
   telemetry([
-    ["地球からの距離", fmtKm(d.earthKm), d.earthKm > MOON_KM ? `月までの${(d.earthKm / MOON_KM).toFixed(0)}倍` : ""],
-    ["火星までの距離", fmtKm(d.marsKm)],
-    ["太陽に対する速さ", `秒速 ${d.sunSpeed.toFixed(1)} km`, `時速 ${(d.sunSpeed * 3.6).toFixed(1)}万 km`],
-    ["電波が地球に届くまで", fmtDuration(d.lightSec)],
-    ["進んだ道のり", fmtKm(d.pathKm), `${Math.round(d.pathKm / total * 100)}%`, d.pathKm / total],
+    [tr("地球からの距離", "Distance from Earth"), fmtKm(d.earthKm), d.earthKm > MOON_KM ? tr(`月までの${(d.earthKm / MOON_KM).toFixed(0)}倍`, `${(d.earthKm / MOON_KM).toFixed(0)}× the Earth–Moon distance`) : ""],
+    [tr("火星までの距離", "Distance to Mars"), fmtKm(d.marsKm)],
+    [tr("太陽に対する速さ", "Speed relative to the Sun"), tr(`秒速 ${d.sunSpeed.toFixed(1)} km`, `${d.sunSpeed.toFixed(1)} km/s`), tr(`時速 ${(d.sunSpeed * 3.6).toFixed(1)}万 km`, `${Math.round(d.sunSpeed * 3600).toLocaleString("en-US")} km/h`)],
+    [tr("電波が地球に届くまで", "Signal travel time to Earth"), fmtDuration(d.lightSec)],
+    [tr("進んだ道のり", "Distance traveled"), fmtKm(d.pathKm), `${Math.round(d.pathKm / total * 100)}%`, d.pathKm / total],
   ], "JPL Horizons");
-  clockPill(dateLabel(value), `打ち上げから ${Math.floor(value)}日目`);
-  $("vg-orbit-label").textContent = `${Math.floor(value)}日目 / ${data.days.length - 1}日`;
+  clockPill(dateLabel(value), tr(`打ち上げから ${Math.floor(value)}日目`, `Day ${Math.floor(value)} since launch`));
+  $("vg-orbit-label").textContent = tr(`${Math.floor(value)}日目 / ${data.days.length - 1}日`, `Day ${Math.floor(value)} / ${data.days.length - 1}`);
 }
 
 // ----- canvas -----
@@ -423,18 +430,31 @@ function burst(x, y, color, n = 16) {
 
 // ----- the landing game: steer clear of hazards on NASA's map -----
 function loadHazardMap() {
-  return new Promise((resolve) => {
-    hazardMap.img.onload = () => {
-      const off = document.createElement("canvas");
-      off.width = hazardMap.img.naturalWidth; off.height = hazardMap.img.naturalHeight;
-      const octx = off.getContext("2d");
-      octx.drawImage(hazardMap.img, 0, 0);
-      try { hazardMap.pixels = octx.getImageData(0, 0, off.width, off.height).data; } catch { hazardMap.pixels = null; }
-      hazardMap.width = off.width;
-      resolve();
+  return new Promise((resolve, reject) => {
+    const image = hazardMap.img;
+    const finish = (error) => {
+      clearTimeout(timer);
+      image.onload = image.onerror = null;
+      if (error) reject(error);
+      else resolve();
     };
-    hazardMap.img.onerror = () => resolve();
-    hazardMap.img.src = MAP.src;
+    const timer = setTimeout(() => finish(new Error("Hazard map load timed out")), 8000);
+    image.onload = () => {
+      try {
+        const off = document.createElement("canvas");
+        off.width = image.naturalWidth;
+        off.height = image.naturalHeight;
+        const context = off.getContext("2d");
+        context.drawImage(image, 0, 0);
+        hazardMap.pixels = context.getImageData(0, 0, off.width, off.height).data;
+        hazardMap.width = off.width;
+        finish();
+      } catch (error) {
+        finish(error);
+      }
+    };
+    image.onerror = () => finish(new Error("Hazard map could not be loaded"));
+    image.src = MAP.src;
   });
 }
 // "hazard" (red), "caution" (yellow) or "safe" (blue) under a map point.
@@ -480,16 +500,16 @@ function renderTrnHud(f) {
   const src = trnSource(f);
   const alt = interpCallout(src, "alt"), spd = interpCallout(src, "speed");
   telemetry([
-    ["高度", alt >= 1000 ? `約${(alt / 1000).toFixed(1)} km` : `約${Math.round(alt)} m`, "管制の読み上げ値を補間"],
-    ["速さ", `秒速 ${Math.round(spd)} m`, `時速 ${Math.round(spd * 3.6)} km`],
-    ["足もと", trn.under === "hazard" ? "危険（赤）" : trn.under === "caution" ? "注意（黄）" : "安全（青）"],
-  ], "NASA 管制の読み上げ");
+    [tr("高度", "Altitude"), alt >= 1000 ? tr(`約${(alt / 1000).toFixed(1)} km`, `About ${(alt / 1000).toFixed(1)} km`) : tr(`約${Math.round(alt)} m`, `About ${Math.round(alt)} m`), tr("管制の読み上げ値を補間", "Interpolated from mission control callouts")],
+    [tr("速さ", "Speed"), tr(`秒速 ${Math.round(spd)} m`, `${Math.round(spd)} m/s`), tr(`時速 ${Math.round(spd * 3.6)} km`, `${Math.round(spd * 3.6)} km/h`)],
+    [tr("足もと", "Terrain below"), trn.under === "hazard" ? tr("危険（赤）", "Hazard (red)") : trn.under === "caution" ? tr("注意（黄）", "Caution (yellow)") : tr("安全（青）", "Safe (blue)")],
+  ], tr("NASA 管制の読み上げ", "NASA mission control callouts"));
 }
 function updateTrn(dt) {
   if (!trn) return;
   trn.t0 += dt;
   if (trn.state === "brief") {
-    $("vg-timer").textContent = `開始まで ${Math.max(1, Math.ceil(BRIEF_SECONDS - trn.t0))}（いまのうちに位置を決められます）`;
+    $("vg-timer").textContent = tr(`開始まで ${Math.max(1, Math.ceil(BRIEF_SECONDS - trn.t0))}（いまのうちに位置を決められます）`, `Starts in ${Math.max(1, Math.ceil(BRIEF_SECONDS - trn.t0))} s · Move now to set your position`);
     steerTrn(dt, trnView(), false);
     renderTrnHud(0);
     if (trn.t0 >= BRIEF_SECONDS) {
@@ -503,7 +523,7 @@ function updateTrn(dt) {
   trn.t += dt;
   const view = trnView();
   stageProgress = view.f; renderProgress();
-  $("vg-timer").textContent = `残り ${Math.max(0, Math.ceil(TRN.seconds - trn.t))} 秒`;
+  $("vg-timer").textContent = tr(`残り ${Math.max(0, Math.ceil(TRN.seconds - trn.t))} 秒`, `${Math.max(0, Math.ceil(TRN.seconds - trn.t))} s remaining`);
 
   // Wind: gusts that grow as the craft gets lower (NASA: wind pushed Perseverance southeast on the parachute).
   trn.gustIn -= dt;
@@ -615,7 +635,7 @@ function drawTrn() {
     ctx.beginPath(); ctx.arc(lx, ly, TRN.nearPx * px * pulse, 0, Math.PI * 2); ctx.stroke();
     ctx.font = `700 ${Math.round(14 * Math.max(0.9, scale))}px "Yu Gothic UI", sans-serif`;
     ctx.fillStyle = "rgba(0,0,0,.6)";
-    const label = "実際の着陸地点";
+    const label = tr("実際の着陸地点", "Actual landing site");
     const tw = ctx.measureText(label).width;
     ctx.fillRect(lx - tw / 2 - 6, ly - TRN.nearPx * px - 30, tw + 12, 22);
     ctx.fillStyle = "#b8ffc4"; ctx.fillText(label, lx - tw / 2, ly - TRN.nearPx * px - 14);
@@ -650,7 +670,7 @@ function drawTrn() {
     ctx.beginPath(); ctx.moveTo(ax + ux * k, ay + uy * k); ctx.lineTo(ax + ux * k - (ux * 12 - uy * 8), ay + uy * k - (uy * 12 + ux * 8));
     ctx.lineTo(ax + ux * k - (ux * 12 + uy * 8), ay + uy * k - (uy * 12 - ux * 8)); ctx.closePath(); ctx.fillStyle = "#fff"; ctx.fill();
     ctx.font = `600 ${Math.round(13 * Math.max(0.9, scale))}px "Yu Gothic UI", sans-serif`;
-    ctx.fillText("風", ax - 6, ay - k - 8);
+    ctx.fillText(tr("風", "Wind"), ax - 6, ay - k - 8);
   }
 }
 
@@ -719,11 +739,11 @@ function stopVideo() {
 // ----- scenes -----
 async function sceneLiftoff() {
   const token = sceneToken;
-  setStage("liftoff", "打ち上げ");
+  setStage("liftoff", tr("打ち上げ", "Launch"));
   badge("nasa");
   setShip(null); bg = {stars: false, speed: 0, earth: 0, mars: 0, sun: 0, entry: 0};
   hideCard();
-  telemetry([["ロケット", LAUNCH.rocket], ["発射場所", LAUNCH.place], ["打ち上げ", LAUNCH.utc, LAUNCH.jst]], "NASA");
+  telemetry([[tr("ロケット", "Rocket"), rocketName()], [tr("発射場所", "Launch site"), launchSite()], [tr("打ち上げ", "Launch"), launchUtc, launchLocalTime()]], "NASA");
   root.dataset.fit = "cover";
   video.src = CLIP("liftoff.mp4");
   video.muted = !sound.enabled;
@@ -733,41 +753,41 @@ async function sceneLiftoff() {
   const count = $("vg-count");
   for (let n = 5; n >= 1; n -= 1) {
     count.hidden = false; count.className = "vg-count mono"; count.textContent = n;
-    clockPill(LAUNCH.utc, `T−${n}`);
+    clockPill(launchUtc, `T−${n}`);
     sound.play("count");
     await sleep(900);
     if (skipped(token)) { count.hidden = true; return; }
   }
   count.className = "vg-count mono go"; count.textContent = "LIFTOFF";
-  clockPill(LAUNCH.utc, "T+00:00");
+  clockPill(launchUtc, "T+00:00");
   sound.play("go");
   const done = playVideo("liftoff.mp4", {volume: 1});
   await sleep(1300);
   count.hidden = true;
   if (skipped(token)) return;
-  caption("リフトオフ", `2020年7月30日 ${LAUNCH.utc}（${LAUNCH.jst}）・NASA の発射台カメラ`, 5000);
+  caption(tr("リフトオフ", "Liftoff"), tr(`2020年7月30日 ${launchUtc}（${launchLocalTime()}）・NASA の発射台カメラ`, `${launchUtc} (${launchLocalTime()}) · NASA launch pad camera`), 5000);
   await until(() => {
     stageProgress = video.currentTime / 20; renderProgress();
-    clockPill(LAUNCH.utc, tPlus(video.currentTime));
+    clockPill(launchUtc, tPlus(video.currentTime));
     return done();
   });
 }
 
 async function sceneAscent() {
-  setStage("ascent", "上昇");
+  setStage("ascent", tr("上昇", "Ascent"));
   badge("nasa");
   const done = playVideo("ascent.mp4", {rate: 2, volume: 0.6});
-  const captions = [[0.2, "ロケットの機体カメラ", "アトラスV の第1段に付けたカメラ（NASA の打ち上げ中継映像・2倍速）"],
-    [15.5, "固体ロケットブースターを切り離す", ""],
-    [ASCENT_EARTH, "地球を回る軌道へ", `この高さを回る登録物体は ${DEBRIS.total.toLocaleString("ja-JP")} 個（うち破片とロケットの機体 ${DEBRIS.debris.toLocaleString("ja-JP")} 個。NASA・2020年11月）`]];
+  const captions = [[0.2, tr("ロケットの機体カメラ", "Onboard rocket camera"), tr("アトラスV の第1段に付けたカメラ（NASA の打ち上げ中継映像・2倍速）", "A camera mounted on the Atlas V first stage (NASA launch broadcast, 2× speed).")],
+    [15.5, tr("固体ロケットブースターを切り離す", "Solid rocket boosters separate"), ""],
+    [ASCENT_EARTH, tr("地球を回る軌道へ", "Entering Earth orbit"), tr(`この高さを回る登録物体は ${DEBRIS.total.toLocaleString("ja-JP")} 個（うち破片とロケットの機体 ${DEBRIS.debris.toLocaleString("ja-JP")} 個。NASA・2020年11月）`, `NASA tracked ${DEBRIS.total.toLocaleString("en-US")} objects in this region, including ${DEBRIS.debris.toLocaleString("en-US")} debris objects and rocket bodies (November 2020).`)]];
   let shown = 0;
   await until(() => {
     const t = video.currentTime;
     while (shown < captions.length && t >= captions[shown][0]) { const [, a, b] = captions[shown++]; caption(a, b, 4200); }
     const seg = [...ASCENT_SEGMENTS].reverse().find(([clipT]) => t >= clipT) ?? ASCENT_SEGMENTS[0];
     const sinceLiftoff = seg[1] + (t - seg[0]) - ROCKET_CAM_LIFTOFF;
-    clockPill(LAUNCH.utc, tPlus(sinceLiftoff));
-    telemetry([["打ち上げからの時間", tPlus(sinceLiftoff), "映像の時刻から"], ["ロケット", LAUNCH.rocket], ["発射場所", LAUNCH.place]], "NASA 映像");
+    clockPill(launchUtc, tPlus(sinceLiftoff));
+    telemetry([[tr("打ち上げからの時間", "Time since launch"), tPlus(sinceLiftoff), tr("映像の時刻から", "From the video timestamp")], [tr("ロケット", "Rocket"), rocketName()], [tr("発射場所", "Launch site"), launchSite()]], tr("NASA 映像", "NASA footage"));
     stageProgress = t / ASCENT_END; renderProgress();
     return t >= ASCENT_END || done();
   });
@@ -775,14 +795,14 @@ async function sceneAscent() {
 
 async function sceneSeparation() {
   const token = sceneToken;
-  setStage("separation", "探査機の分離");
+  setStage("separation", tr("探査機の分離", "Spacecraft separation"));
   badge("nasa");
   hideCard(); setShip(null);
   const done = playVideo("separation.mp4", {rate: 1.5, volume: 0.5});
-  caption("探査機がロケットから離れる", "上段ロケット Centaur のカメラ。円盤形のクルーズステージが遠ざかっていきます（NASA・1.5倍速）", 6000);
+  caption(tr("探査機がロケットから離れる", "The spacecraft separates from the rocket"), tr("上段ロケット Centaur のカメラ。円盤形のクルーズステージが遠ざかっていきます（NASA・1.5倍速）", "The Centaur upper stage camera shows the disk-shaped cruise stage drifting away (NASA, 1.5× speed)."), 6000);
   let second = false;
   await until(() => {
-    if (!second && video.currentTime > 12) { second = true; caption("火星まで 203日の旅", `NASA の発表で約4億7,200万 km。Horizons の軌道から計算すると ${fmtKm(data.days.at(-1).pathKm)}`, 6000); }
+    if (!second && video.currentTime > 12) { second = true; caption(tr("火星まで 203日の旅", "203 days to Mars"), tr(`NASA の発表で約4億7,200万 km。Horizons の軌道から計算すると ${fmtKm(data.days.at(-1).pathKm)}`, `NASA reported about 472 million km. The trajectory in JPL Horizons gives ${fmtKm(data.days.at(-1).pathKm)}.`), 6000); }
     stageProgress = video.currentTime / 32; renderProgress();
     return done();
   });
@@ -797,17 +817,17 @@ function cruiseNotes() {
   const near = days.find((d) => d.marsKm < 5e6);
   const nearest = data.asteroids.nearest[0];
   return [
-    {day: 2, text: "打ち上げの週、地球のそばを小惑星が通過",
-      small: `7月30日〜8月5日に ${data.asteroids.count} 個。いちばん近い ${nearest.name}（直径 約${nearest.diameterM} m）も月までの距離の ${nearest.missLunar} 倍（NASA NeoWs）`},
-    {day: half.day, text: "旅の半分", small: `${dateLabel(half.day)}・${fmtKm(half.pathKm)} を進んだ（JPL Horizons）`},
-    {day: FLARE.day, text: `太陽フレア ${FLARE.cls}`, small: `${FLARE.peak}。3年あまりで最大のフレア。噴き出した物質は地球の方向には向かいませんでした`},
-    {day: near.day, text: "火星が近づく", small: `${dateLabel(near.day)}・火星まで ${fmtKm(near.marsKm)}`},
+    {day: 2, text: tr("打ち上げの週、地球のそばを小惑星が通過", "Asteroids pass near Earth during launch week"),
+      small: tr(`7月30日〜8月5日に ${data.asteroids.count} 個。いちばん近い ${nearest.name}（直径 約${nearest.diameterM} m）も月までの距離の ${nearest.missLunar} 倍（NASA NeoWs）`, `NASA NeoWs recorded ${data.asteroids.count} close approaches from July 30 to August 5. The closest, ${nearest.name} (about ${nearest.diameterM} m across), passed at ${nearest.missLunar} times the Earth–Moon distance.`)},
+    {day: half.day, text: tr("旅の半分", "Halfway there"), small: tr(`${dateLabel(half.day)}・${fmtKm(half.pathKm)} を進んだ（JPL Horizons）`, `${dateLabel(half.day)} · ${fmtKm(half.pathKm)} traveled (JPL Horizons)`)},
+    {day: FLARE.day, text: tr(`太陽フレア ${FLARE.cls}`, `Class ${FLARE.cls} solar flare`), small: tr(`${FLARE.peak}。3年あまりで最大のフレア。噴き出した物質は地球の方向には向かいませんでした`, `${FLARE.peak}. The strongest flare in more than three years. The ejected material did not head toward Earth.`)},
+    {day: near.day, text: tr("火星が近づく", "Approaching Mars"), small: tr(`${dateLabel(near.day)}・火星まで ${fmtKm(near.marsKm)}`, `${dateLabel(near.day)} · ${fmtKm(near.marsKm)} to Mars`)},
   ];
 }
 
 async function sceneCruise() {
   const token = sceneToken;
-  setStage("cruise", "火星への航行");
+  setStage("cruise", tr("火星への航行", "Cruise to Mars"));
   badge("cg");
   root.dataset.video = "off"; video.pause();
   hideCard();
@@ -847,14 +867,14 @@ function updateLanding() {
   let speed = null, alt = null, speedAt = -Infinity;
   for (const c of CALLOUTS) { if (c.t <= src) { if (c.speed !== undefined) { speed = c.speed; speedAt = c.t; } if (c.alt !== undefined) alt = c.alt; } }
   if (src - speedAt > STALE_SECONDS && speed !== 0) speed = null; // don't keep showing an old reading
-  const altText = alt === null ? "—" : alt >= 1000 ? `約${(alt / 1000).toFixed(1)} km` : `約${alt} m`;
+  const altText = alt === null ? "—" : alt >= 1000 ? tr(`約${(alt / 1000).toFixed(1)} km`, `About ${(alt / 1000).toFixed(1)} km`) : tr(`約${alt} m`, `About ${alt} m`);
   telemetry([
-    ["速さ（管制の読み上げ）", speed === null ? "—" : `秒速 ${speed} m`, speed === null ? "" : `時速 ${Math.round(speed * 3.6).toLocaleString("ja-JP")} km`],
-    ["高度（同）", altText],
-  ], "NASA 管制の読み上げ");
+    [tr("速さ（管制の読み上げ）", "Speed (mission control)"), speed === null ? "—" : tr(`秒速 ${speed} m`, `${speed} m/s`), speed === null ? "" : tr(`時速 ${Math.round(speed * 3.6).toLocaleString("ja-JP")} km`, `${Math.round(speed * 3.6).toLocaleString("en-US")} km/h`)],
+    [tr("高度（同）", "Altitude (mission control)"), altText],
+  ], tr("NASA 管制の読み上げ", "NASA mission control callouts"));
   renderPhases(src);
   const sub = SUBTITLES.find(([a, b]) => src >= a && src < b);
-  const text = sub ? sub[2] : "";
+  const text = sub ? tr(...sub[2]) : "";
   if (text !== lastSub) {
     lastSub = text;
     $("vg-sub").hidden = !text;
@@ -864,7 +884,7 @@ function updateLanding() {
 
 async function sceneEntry() {
   const token = sceneToken;
-  setStage("entry", "着陸");
+  setStage("entry", tr("着陸", "Landing"));
   badge("cg");
   hideCard();
   root.dataset.hull = "off";
@@ -873,27 +893,27 @@ async function sceneEntry() {
   setShip("capsule");
   bg = {stars: true, speed: 3, earth: 0, mars: 0, sun: 0, entry: 1};
   const light = data.days.at(-1).lightSec;
-  telemetry([["突入の速さ", "時速 約19,500 km"], ["着地までの時間", "約7分"], ["電波が地球に届くまで", fmtDuration(light)]], "NASA / JPL Horizons");
-  clockPill("2021-02-18", "着陸の日");
+  telemetry([[tr("突入の速さ", "Entry speed"), tr("時速 約19,500 km", "About 19,500 km/h")], [tr("着地までの時間", "Time to touchdown"), tr("約7分", "About 7 min")], [tr("電波が地球に届くまで", "Signal travel time to Earth"), fmtDuration(light)]], "NASA / JPL Horizons");
+  clockPill("2021-02-18", tr("着陸の日", "Landing day"));
   sound.play("entry");
-  caption("火星の大気に突入", "時速 約19,500 km から、約7分で時速 約3 km まで減速して着地します（NASA）", 3800);
+  caption(tr("火星の大気に突入", "Entering the Martian atmosphere"), tr("時速 約19,500 km から、約7分で時速 約3 km まで減速して着地します（NASA）", "The spacecraft slows from about 19,500 km/h to about 3 km/h at touchdown in roughly seven minutes (NASA)."), 3800);
   await sleep(3800);
   if (skipped(token)) return;
-  caption("恐怖の7分間", `電波が地球に届くまで ${fmtDuration(light)}。管制室に知らせが届くのは、すべてが終わった後です`, 4200);
+  caption(tr("恐怖の7分間", "Seven minutes of terror"), tr(`電波が地球に届くまで ${fmtDuration(light)}。管制室に知らせが届くのは、すべてが終わった後です`, `Signals take ${fmtDuration(light)} to reach Earth. Mission control will hear the news after the landing is over.`), 4200);
   await sleep(4200);
 }
 
 // Part 1 of the film: parachute, heat shield, the first look at the ground.
 async function sceneDescent() {
-  setStage("landing", "着陸");
+  setStage("landing", tr("着陸", "Landing"));
   badge("nasa");
-  clockPill("2021-02-18", "着陸の日");
+  clockPill("2021-02-18", tr("着陸の日", "Landing day"));
   setShip(null); bg = {stars: false, speed: 0, earth: 0, mars: 0, sun: 0, entry: 0};
   hideCaption();
   $("vg-phases").hidden = false;
-  $("vg-phases").replaceChildren(...PHASES.map((p) => { const li = document.createElement("li"); li.textContent = p.label; return li; }));
-  card({kind: "info", label: "実際の映像", title: "パーサヴィアランスの着陸",
-    message: "機体のカメラが撮った実際の映像です。音声は当日の管制室の読み上げ（英語）。字幕と右の数値は、その読み上げから付けています。",
+  $("vg-phases").replaceChildren(...PHASES.map((p) => { const li = document.createElement("li"); li.textContent = tr(...p.label); return li; }));
+  card({kind: "info", label: tr("実際の映像", "NASA footage"), title: tr("パーサヴィアランスの着陸", "Perseverance’s landing"),
+    message: tr("機体のカメラが撮った実際の映像です。音声は当日の管制室の読み上げ（英語）。字幕と右の数値は、その読み上げから付けています。", "The spacecraft’s cameras captured this footage. The audio is mission control’s original commentary. The captions and telemetry come from those callouts."),
     sources: [SOURCES.landing, SOURCES.edl]});
   const done = playVideo("landing.mp4", {fit: "contain", volume: 1});
   landingMode = true;
@@ -905,7 +925,7 @@ async function sceneDescent() {
 
 // The game: backshell separation (2.6 km) to the sky crane (20 m), on NASA's hazard map.
 async function runTrn() {
-  setStage("trn", "着陸地点へ回避");
+  setStage("trn", tr("着陸地点へ回避", "Divert to the landing site"));
   badge("map");
   hideCaption();
   root.dataset.hull = "on";
@@ -920,15 +940,15 @@ async function runTrn() {
     particles = [];
     trn = {state: "brief", t: 0, t0: 0, ox: 0, oy: 0, wind: {x: 0, y: 0}, gustIn: 1.2, hitCooldown: 0,
       under: "safe", damage: 0, hazardTime: 0, final: null, distance: null,
-      notes: [{f: 0.02, text: "高度 2.6 km：回避開始", small: "バックシェルを切り離し、エンジンで横へ移動"},
-        {f: 0.42, text: "高度 1 km：風が強まる", small: "流されないように"},
-        {f: 0.72, text: "高度 300 m：着地点を決める", small: "緑の輪が実際の着陸地点"}]};
+      notes: [{f: 0.02, text: tr("高度 2.6 km：回避開始", "2.6 km altitude: Divert begins"), small: tr("バックシェルを切り離し、エンジンで横へ移動", "Release the backshell and use the engines to steer sideways.")},
+        {f: 0.42, text: tr("高度 1 km：風が強まる", "1 km altitude: Wind picks up"), small: tr("流されないように", "Steer against the drift.")},
+        {f: 0.72, text: tr("高度 300 m：着地点を決める", "300 m altitude: Choose where to land"), small: tr("緑の輪が実際の着陸地点", "The green ring marks the actual landing site.")}]};
     Object.assign(trn, safeStart());
     renderSpeed();
-    card({kind: "warn", label: "最大の難所", title: "着陸地点へ回避：地形相対航法",
-      message: "NASA が着陸のために作った実際の危険度マップです。青は安全、黄は注意、赤は危険（崖・岩の多い場所・砂丘など）。赤の上を通らず、最後は青の上に降りてください。← → ↑ ↓・マウス・指で動かします。風で南東へ流されます。",
-      facts: [["着陸の責任者の言葉", "「これまでで最も危険な着陸地点」"], ["回避を始める高度", "約2.6 km（管制の読み上げ）"], ["地図", "NASA PIA23970（HiRISE の画像から作成）"]],
-      note: "地図と高度は NASA の記録。機体の絵・風の強さ・ダメージはゲームの設定です（AI生成のCG）。右下の小窓は同じ時間帯の実際の映像です。",
+    card({kind: "warn", label: tr("最大の難所", "Landing challenge"), title: tr("着陸地点へ回避：地形相対航法", "Divert to the landing site: Terrain-relative navigation"),
+      message: tr("NASA が着陸のために作った実際の危険度マップです。青は安全、黄は注意、赤は危険（崖・岩の多い場所・砂丘など）。赤の上を通らず、最後は青の上に降りてください。← → ↑ ↓・マウス・指で動かします。風で南東へ流されます。", "This is NASA’s hazard map for the landing. Blue is safe, yellow calls for caution, and red marks hazards such as cliffs, rocks, and dunes. Avoid red areas and land on blue. Steer with the arrow keys, mouse, or touch. Wind pushes you southeast."),
+      facts: [[tr("着陸の責任者の言葉", "Landing team lead"), tr("「これまでで最も危険な着陸地点」", "“The most challenging landing site”")], [tr("回避を始める高度", "Divert start altitude"), tr("約2.6 km（管制の読み上げ）", "About 2.6 km (mission control)")], [tr("地図", "Map"), tr("NASA PIA23970（HiRISE の画像から作成）", "NASA PIA23970 (from HiRISE imagery)")]],
+      note: tr("地図と高度は NASA の記録。機体の絵・風の強さ・ダメージはゲームの設定です（AI生成のCG）。右下の小窓は同じ時間帯の実際の映像です。", "The map and altitude come from NASA records. The spacecraft graphic is AI-generated, and wind and damage are gameplay settings. The inset shows real footage from this phase."),
       sources: [SOURCES.hazard, SOURCES.usgs, SOURCES.chen]});
     $("vg-timer").textContent = "";
     sound.play("warn");
@@ -940,8 +960,8 @@ async function runTrn() {
       const near = trn.distance <= TRN.nearPx;
       results.voyage = {hull: Math.ceil(hull), safe, near, hazardSeconds: +trn.hazardTime.toFixed(1)};
       sound.play(safe ? "clear" : "hit");
-      caption(safe ? (near ? "実際の着陸地点にぴったり！" : "安全な場所に着地") : "危険な場所に着地…",
-        `機体の状態 ${Math.ceil(hull)}%・赤の上にいた時間 ${trn.hazardTime.toFixed(1)} 秒`, 2600);
+      caption(safe ? (near ? tr("実際の着陸地点にぴったり！", "Right on the actual landing site!") : tr("安全な場所に着地", "Landed in a safe area")) : tr("危険な場所に着地…", "Landed in a hazard zone"),
+        tr(`機体の状態 ${Math.ceil(hull)}%・赤の上にいた時間 ${trn.hazardTime.toFixed(1)} 秒`, `Hull integrity: ${Math.ceil(hull)}% · Time over red terrain: ${trn.hazardTime.toFixed(1)} s`), 2600);
       hideCard();
       await sleep(1800);
       trn = null;
@@ -949,9 +969,9 @@ async function runTrn() {
     }
     let retry = false;
     sound.play("fail");
-    card({kind: "fail", label: "着陸失敗", title: "機体が大きく損傷しました",
-      message: "もう一度挑戦できます。風が吹く向き（南東）の反対側に、早めに寄せておくのがこつです。",
-      actions: [["もう一度挑戦する", () => { retry = true; }, true]]});
+    card({kind: "fail", label: tr("着陸失敗", "Landing failed"), title: tr("機体が大きく損傷しました", "The spacecraft took heavy damage"),
+      message: tr("もう一度挑戦できます。風が吹く向き（南東）の反対側に、早めに寄せておくのがこつです。", "Try again. Move northwest early to counter the wind pushing you southeast."),
+      actions: [[tr("もう一度挑戦する", "Try again"), () => { retry = true; }, true]]});
     await until(() => retry);
     hull = 100; renderHull();
     if (skipped(token)) { trn = null; hideCard(); return; }
@@ -961,7 +981,7 @@ async function runTrn() {
 // Part 2 of the film: the sky crane and touchdown.
 async function sceneTouchdown() {
   const token = sceneToken;
-  setStage("touchdown", "着陸");
+  setStage("touchdown", tr("着陸", "Landing"));
   badge("nasa");
   root.dataset.hull = "off";
   root.dataset.pip = "off";
@@ -980,7 +1000,7 @@ async function sceneTouchdown() {
 }
 
 async function sceneArrival() {
-  setStage("arrival", "探査開始");
+  setStage("arrival", tr("探査開始", "Begin exploration"));
   badge("nasa");
   stopVideo(); hideCard(); setShip(null); landingMode = false; trn = null;
   $("vg-sub").hidden = true; $("vg-phases").hidden = true;
@@ -990,15 +1010,15 @@ async function sceneArrival() {
   if (!photo && missionPhoto) {
     photo = document.createElement("img");
     photo.className = "vg-arrival-photo";
-    photo.alt = "Perseverance の Navcam が撮影したジェゼロ・クレーター";
+    photo.alt = tr("Perseverance の Navcam が撮影したジェゼロ・クレーター", "Jezero Crater photographed by Perseverance’s Navcam");
     photo.src = missionPhoto;
     root.prepend(photo);
   }
   sound.play("arrive");
   const v = results.voyage;
-  const summary = v?.hull !== undefined ? `着陸の結果：機体 ${v.hull}%・${v.safe ? (v.near ? "実際の着陸地点に着地" : "安全な場所に着地") : "危険な場所に着地"}` : "";
-  caption("探査開始！", `2021年2月18日 ジェゼロ・クレーターに着陸。${summary}`, 0);
-  clockPill("Sol 15", "着陸から15 sol 後、最初の本格的な走行へ");
+  const summary = v?.hull !== undefined ? tr(`着陸の結果：機体 ${v.hull}%・${v.safe ? (v.near ? "実際の着陸地点に着地" : "安全な場所に着地") : "危険な場所に着地"}`, ` Landing result: Hull ${v.hull}% · ${v.safe ? (v.near ? "Reached the real landing site" : "Landed in a safe area") : "Landed in a hazard zone"}.`) : "";
+  caption(tr("探査開始！", "Exploration begins!"), tr(`2021年2月18日 ジェゼロ・クレーターに着陸。${summary}`, `Perseverance landed in Jezero Crater on February 18, 2021.${summary}`), 0);
+  clockPill("Sol 15", tr("着陸から15 sol 後、最初の本格的な走行へ", "Heading for the first major drive, 15 sols after touchdown"));
   await new Promise((resolve) => setTimeout(resolve, 3600));
   enterRover(true);
 }
@@ -1048,14 +1068,15 @@ $("vg-speed").addEventListener("click", () => {
   applyRate();
   renderSpeed();
 });
-const showSound = () => { $("vg-sound").textContent = sound.enabled ? "音 オン" : "音 オフ"; $("vg-sound").setAttribute("aria-pressed", sound.enabled); video.muted = !sound.enabled; };
+const showSound = () => { $("vg-sound").textContent = sound.enabled ? tr("音 オン", "Sound on") : tr("音 オフ", "Sound off"); $("vg-sound").setAttribute("aria-pressed", sound.enabled); video.muted = !sound.enabled; };
 $("vg-sound").addEventListener("click", () => { sound.unlock(); sound.toggle(); });
 window.addEventListener("soundchange", showSound);
+document.addEventListener("localechange", showSound);
 showSound();
 
 function setPaused(value) {
   paused = value;
-  if (paused) { video.pause(); caption("一時停止中", "Space で再開", 0); }
+  if (paused) { video.pause(); caption(tr("一時停止中", "Paused"), tr("Space で再開", "Press Space to resume"), 0); }
   else {
     hideCaption();
     const filmRunning = root.dataset.video === "on" && !video.ended && !(trn && trn.state !== "play");
@@ -1076,6 +1097,19 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && doc
 window.addEventListener("resize", resize);
 
 // ----- start -----
+const begin = $("vg-begin");
+let introState = "loading";
+function renderIntroAction() {
+  const labels = {
+    loading: ["データを読み込み中…", "Loading mission data…"],
+    ready: ["ミッション開始", "Start mission"],
+    failed: ["読み込めません（探査から始めてください）", "Loading failed. Start with exploration."],
+  };
+  begin.textContent = tr(...labels[introState]);
+}
+document.addEventListener("localechange", renderIntroAction);
+renderIntroAction();
+
 resize();
 makeStars();
 buildMarks();
@@ -1083,9 +1117,11 @@ renderHull();
 badge("cg");
 requestAnimationFrame(frame);
 
+$("vg-to-rover").addEventListener("click", () => { results.voyage = null; enterRover(false); });
+
 try {
   const [voyage, mission] = await Promise.all(["voyage", "mission"].map(async (name) => {
-    const response = await fetch(`assets/${name}.json`);
+    const response = await fetch(`assets/${name}.json`, {signal: AbortSignal.timeout(8000)});
     if (!response.ok) throw new Error(`${name}.json: ${response.status}`);
     return response.json();
   }));
@@ -1094,17 +1130,19 @@ try {
   await loadHazardMap();
   drawOrbit();
   renderOrbit(0);
-  const begin = $("vg-begin");
+  introState = "ready";
   begin.disabled = false;
-  begin.textContent = "ミッション開始";
+  renderIntroAction();
   begin.addEventListener("click", () => { sound.unlock(); story("launch"); });
-  $("vg-to-rover").addEventListener("click", () => { results.voyage = null; enterRover(false); });
   const scene = params.get("scene");
-  if (scene === "rover") { results.voyage = null; enterRover(false); }
-  else if (["cruise", "landing"].includes(scene)) { sound.unlock(); story(scene); }
-  else begin.focus();
+  if (document.body.dataset.scene === "voyage" && !root.classList.contains("leaving")) {
+    if (scene === "rover") { results.voyage = null; enterRover(false); }
+    else if (["cruise", "landing"].includes(scene)) { sound.unlock(); story(scene); }
+    else if (document.activeElement === document.body) begin.focus();
+  }
 } catch (error) {
   console.error(error);
-  $("vg-begin").textContent = "読み込めません（探査から始めてください）";
-  $("vg-to-rover").addEventListener("click", () => enterRover(false));
+  introState = "failed";
+  renderIntroAction();
+
 }
