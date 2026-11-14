@@ -1,0 +1,85 @@
+{
+  "note": "実際に火星ローバーで起きたアクシデントと、実際に取られた対応策。ゲームでは Perseverance に起きたものとして出題する。keywords は採点用（ひらがな・カタカナは区別しない）。answer は後でAI採点の参照解答にも使う。",
+  "accidents": [
+    {
+      "id": "wheel",
+      "title": "右前輪が回らなくなった",
+      "situation": "走行中、右前輪を回すモーターに電流が流れなくなり、右前輪が回りません。ほかの5輪は正常です。どうやって走行を続けますか？",
+      "rover": "Spirit",
+      "date": "2006年3月13日（Sol 779）",
+      "answer": "後ろ向きに走り、動かない右前輪を引きずりながら、残りの5輪で走行を続けた。引きずった車輪は地面に溝を残した。",
+      "min": 2,
+      "groups": [
+        {"name": "後ろ向きに走る", "keywords": ["後ろ", "うしろ", "後退", "こうたい", "バック", "逆向き", "逆方向", "後進", "リバース"],
+          "hint": "どちら向きに走るかを考えてください。"},
+        {"name": "壊れた車輪を引きずり、5輪で走る", "keywords": ["引きず", "ひきず", "引っ張", "ひっぱ", "5輪", "五輪", "残りの車輪", "他の車輪", "ほかの車輪", "残り"],
+          "hint": "回らない車輪をどう扱うかを考えてください。"}
+      ],
+      "source": {"label": "Mars Daily: Spirit Driving On Five Wheels", "url": "https://www.energy-daily.com/reports/Mars_Rover_Update_Spirit_Driving_On_Five_Wheels.html"}
+    },
+    {
+      "id": "dune",
+      "title": "砂にはまって動けない",
+      "situation": "柔らかい砂の波（リップル）に入り、6輪すべてがリムまで埋まりました。車輪を回しても前に進みません。どうやって抜け出しますか？",
+      "rover": "Opportunity",
+      "date": "2005年4月26日〜6月4日（Purgatory Dune）",
+      "answer": "地球で試験用ローバーを同じように砂に埋めて脱出の方法を試し、そのうえで火星のローバーの車輪をゆっくり少しずつ回して、約5週間かけて抜け出した。",
+      "min": 2,
+      "groups": [
+        {"name": "地球で再現して試す", "keywords": ["地球", "試験", "テスト", "再現", "実験", "シミュレ", "模擬", "検証"],
+          "hint": "いきなり火星で試す前に、どこで確かめますか？"},
+        {"name": "ゆっくり少しずつ動かす", "keywords": ["少しずつ", "すこしずつ", "ゆっくり", "小刻み", "慎重", "低速", "わずか", "少し"],
+          "hint": "車輪の回し方を考えてください。"}
+      ],
+      "source": {"label": "NASA/JPL: Looking Back at Purgatory Dune", "url": "https://www.jpl.nasa.gov/images/pia07999-looking-back-at-purgatory-dune"}
+    },
+    {
+      "id": "computer",
+      "title": "コンピュータの記憶装置が故障",
+      "situation": "メインコンピュータのフラッシュメモリに異常が起き、毎日のデータ送信と休止への切り替えができなくなりました。どう対応しますか？",
+      "rover": "Curiosity",
+      "date": "2013年2月28日",
+      "answer": "予備のコンピュータ（B側）に切り替え、ローバーはセーフモード（最小限の動作で待機する状態）に入った。3月2日にセーフモードを抜け、以後はB側で運用を続けた。",
+      "min": 1,
+      "groups": [
+        {"name": "予備のコンピュータに切り替える", "keywords": ["予備", "バックアップ", "B側", "Bサイド", "冗長", "もう一台", "もう1台", "副系", "切り替", "切替", "交代"],
+          "hint": "ローバーにはコンピュータが2台積まれています。"},
+        {"name": "セーフモードで待機する", "keywords": ["セーフモード", "安全モード", "待機"],
+          "hint": "異常の最中、ローバーをどんな状態にしておきますか？"}
+      ],
+      "source": {"label": "NASA/JPL: Curiosity Rover's Recovery on Track", "url": "https://www.jpl.nasa.gov/news/curiosity-rovers-recovery-on-track"}
+    },
+    {
+      "id": "wear",
+      "title": "車輪に穴と裂け目",
+      "situation": "点検の画像で、アルミ製の車輪に穴や裂け目が増えているのが見つかりました。走れば走るほど傷みが進みます。どうやって車輪を長持ちさせますか？",
+      "rover": "Curiosity",
+      "date": "2013年10月から損傷が増加、2017年に対策ソフトを導入",
+      "answer": "地形に合わせて各車輪の速さを調整し、車輪にかかる力を減らすトラクション制御のソフトを開発して、2017年に地球から送り込んだ。車輪の傷み具合は定期的に撮影して確かめている。",
+      "min": 1,
+      "groups": [
+        {"name": "車輪の速さを制御するソフトを入れる", "keywords": ["速さ", "速度", "回転", "制御", "ソフト", "プログラム", "トラクション", "調整", "アルゴリズム"],
+          "hint": "車輪そのものは交換できません。動かし方で負担を減らせないか考えてください。"},
+        {"name": "定期的に撮影して確かめる", "keywords": ["撮影", "点検", "監視", "観察", "チェック", "モニタ"],
+          "hint": "傷み具合をどう見守りますか？"}
+      ],
+      "source": {"label": "NASA/JPL: An Algorithm Helps Protect Mars Curiosity's Wheels", "url": "https://www.jpl.nasa.gov/news/an-algorithm-helps-protect-mars-curiositys-wheels/"}
+    },
+    {
+      "id": "drill",
+      "title": "ドリルの送り機構が動かない",
+      "situation": "ドリルの刃を岩へ押し出す機構（送り機構）が、指令を出しても動かなくなりました。刃を回すことはできます。どうやって岩に穴を開けますか？",
+      "rover": "Curiosity",
+      "date": "2016年12月に故障、2018年2月に新しい掘り方で穴開けに成功",
+      "answer": "送り機構を使わず、ロボットアームの動きで刃を岩に押し込む新しい掘り方（feed-extended drilling）を開発し、2018年2月に火星で穴を開けることに成功した。",
+      "min": 2,
+      "groups": [
+        {"name": "ロボットアームを使う", "keywords": ["アーム", "腕", "うで"],
+          "hint": "ドリルはどこに付いていて、ほかに何が動かせますか？"},
+        {"name": "刃を岩へ押し込む", "keywords": ["押し", "押す", "おし", "おす", "突っ込", "つっこ", "差し込", "さしこ", "押しつけ", "押し付け"],
+          "hint": "刃を岩へ進める力を、どうやって出しますか？"}
+      ],
+      "source": {"label": "NASA/JPL: Mars Rover Mission Progresses Toward Resumed Drilling", "url": "https://www.jpl.nasa.gov/news/mars-rover-mission-progresses-toward-resumed-drilling/"}
+    }
+  ]
+}

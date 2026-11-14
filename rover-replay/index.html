@@ -9,54 +9,158 @@
   <script src="game.js" type="module"></script>
 </head>
 <body>
-  <header class="shell top">
-    <div class="identity"><span class="planet" aria-hidden="true"></span><div>
-      <p class="eyebrow">MARS 2020 / PERSEVERANCE</p><h1>Jezero Traverse</h1>
-    </div></div>
-    <div class="stage"><span class="signal" aria-hidden="true"></span>ジェゼロ・クレーター <span class="muted">SOL 15–23</span></div>
-  </header>
-  <main class="shell">
-    <div class="heading">
-      <div><p class="eyebrow">MISSION REPLAY</p><h2>火星走行シミュレーション</h2></div>
-      <p class="muted">実画像と記録された走行線を再生。トラブルはゲーム用の創作です。</p>
-    </div>
-    <div class="views">
-      <section class="panel" aria-labelledby="camera-title">
-        <header class="panel-head"><h3 id="camera-title">左 Navcam</h3><span id="frame-info" class="mono">—</span></header>
-        <figure class="camera"><img id="photo" alt="Perseveranceの左Navcamが撮影した火星の地表"><figcaption id="capture" class="mono">撮影データを読み込み中</figcaption></figure>
+  <div class="screen" data-mode="panel">
+    <img id="photo" class="backdrop" alt="Perseveranceの左Navcamが撮影した火星の地表">
+
+    <header class="topbar">
+      <div class="brand"><span class="planet" aria-hidden="true"></span><div>
+        <p class="eyebrow">MARS 2020 / PERSEVERANCE</p><h1>Jezero Traverse</h1>
+      </div></div>
+      <p class="pill mono"><span>左 Navcam</span> <span id="frame-info">—</span> · <span id="capture">撮影データを読み込み中</span></p>
+    </header>
+
+    <div class="middle">
+      <section class="glass hud telemetry" aria-labelledby="hud-title">
+        <header class="hud-head"><h2 id="hud-title">ローバーの状態</h2><span class="muted">計画中は判断に使う項目が光ります</span></header>
+
+        <div class="widget" data-key="clock sun">
+          <div class="w-head"><span>現地時刻と太陽</span><b id="h-clock" class="mono">—</b></div>
+          <div class="daybar" aria-hidden="true">
+            <span class="limit" id="h-limit"><i>走行終了の基準</i></span>
+            <span class="sun" id="h-sun"></span>
+          </div>
+          <div class="daybar-scale mono" aria-hidden="true"><span>6時</span><span>12時</span><span>18時</span></div>
+          <p class="w-note">太陽の高さ <b id="h-sun-elev" class="mono">—</b></p>
+        </div>
+
+        <div class="widget" data-key="pitch roll elevation">
+          <div class="w-head"><span>地形の傾き</span><span class="muted small">図は4倍に誇張</span></div>
+          <div class="tilt">
+            <figure>
+              <svg viewBox="-30 -22 60 34" aria-hidden="true"><line x1="-30" y1="8" x2="30" y2="8" class="ground"/>
+                <g id="h-pitch-icon"><rect x="-17" y="-8" width="34" height="9" rx="2" class="body"/><line x1="10" y1="-8" x2="10" y2="-19" class="mast"/><rect x="7" y="-21" width="8" height="4" rx="1" class="body"/>
+                  <circle cx="-13" cy="5" r="3.5" class="wheel"/><circle cx="0" cy="5" r="3.5" class="wheel"/><circle cx="13" cy="5" r="3.5" class="wheel"/></g></svg>
+              <figcaption>前後 <b id="h-pitch" class="mono">—</b></figcaption>
+            </figure>
+            <figure>
+              <svg viewBox="-30 -22 60 34" aria-hidden="true"><line x1="-30" y1="8" x2="30" y2="8" class="ground"/>
+                <g id="h-roll-icon"><rect x="-13" y="-10" width="26" height="11" rx="2" class="body"/><line x1="0" y1="-10" x2="0" y2="-19" class="mast"/><rect x="-4" y="-21" width="8" height="4" rx="1" class="body"/>
+                  <rect x="-19" y="-1" width="6" height="9" rx="1.5" class="wheel"/><rect x="13" y="-1" width="6" height="9" rx="1.5" class="wheel"/></g></svg>
+              <figcaption>左右 <b id="h-roll" class="mono">—</b></figcaption>
+            </figure>
+          </div>
+          <div class="limitbar" aria-hidden="true"><span id="h-tilt-bar"></span><i id="h-tilt-limit"></i></div>
+          <p class="w-note">大きい方の傾き <b id="h-tilt" class="mono">—</b> / 基準 <span id="h-tilt-rule" class="mono">—</span></p>
+          <svg id="h-profile" class="profile" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <p class="w-note">標高（出発地点から） <b id="h-elev" class="mono">—</b></p>
+        </div>
+
+        <div class="widget" data-key="heading">
+          <div class="w-head"><span>方位</span></div>
+          <div class="compass-row">
+            <svg class="compass" viewBox="-50 -50 100 100" aria-hidden="true">
+              <circle r="44" class="rim"/>
+              <g class="ticks" id="h-ticks"></g>
+              <text y="-30" class="cardinal north">N</text><text x="32" y="4" class="cardinal">E</text><text y="37" class="cardinal">S</text><text x="-32" y="4" class="cardinal">W</text>
+              <g id="h-sun-mark"><circle cy="-44" r="5.5" class="sunmark"/></g>
+              <g id="h-heading-arrow"><path d="M0 -26 L7 8 L0 3 L-7 8 Z" class="arrow"/></g>
+            </svg>
+            <div class="compass-text">
+              <p><span class="key-arrow" aria-hidden="true"></span>進む向き <b id="h-heading" class="mono">—</b></p>
+              <p><span class="key-sun" aria-hidden="true"></span>太陽の方角 <b id="h-sun-az" class="mono">—</b></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget" data-key="delay">
+          <div class="w-head"><span>画像が地球に届くまで</span><b id="h-delay" class="mono">—</b></div>
+          <div class="downlink" aria-hidden="true"><span>火星</span><span class="track"><span id="h-delay-bar"></span></span><span>地球</span></div>
+          <p class="w-note desc">いま表示中の画像の、撮影から地球で受信するまでの時間</p>
+        </div>
       </section>
-      <section class="panel" aria-labelledby="map-title">
-        <header class="panel-head"><h3 id="map-title">走行マップ</h3><span class="mono">MRO / HiRISE</span></header>
+
+      <section class="glass mapbox" aria-labelledby="map-title">
+        <header class="hud-head"><h2 id="map-title">走行マップ</h2><span class="mono muted">MRO / HiRISE · ↑N</span></header>
         <figure class="map-wrap">
-          <svg id="map" role="img" aria-label="ジェゼロの衛星画像、走行線、トラブル地点、ローバー位置"></svg>
-          <span class="north" aria-label="北が上">↑ N</span>
-          <figcaption class="map-key"><span class="rover-key"></span>ローバー <span class="incident-key"></span>トラブル地点</figcaption>
+          <svg id="map" role="img" aria-label="ジェゼロの衛星画像、走行線、計画地点、ローバー位置"></svg>
+          <figcaption class="map-key"><span class="rover-key"></span>ローバー <span class="incident-key"></span>計画地点</figcaption>
         </figure>
       </section>
     </div>
-    <section class="panel controls" aria-labelledby="mission-title">
+
+    <div id="toast" class="glass toast" role="status" hidden></div>
+
+    <section class="glass controls" aria-labelledby="mission-title">
       <div class="mission-meta">
-        <div><p class="eyebrow">MISSION CONTROL</p><h3 id="mission-title">走行を開始</h3></div>
+        <div><p class="eyebrow">MISSION CONTROL</p><h2 id="mission-title">走行を開始</h2></div>
+        <div id="power" class="power" data-level="ok">
+          <span class="power-label">電力</span>
+          <span class="power-track" aria-hidden="true"><span id="power-bar"></span></span>
+          <span id="power-value" class="mono">100%</span>
+          <span id="power-note" class="mono power-note">—</span>
+        </div>
         <div class="mono clock"><span id="elapsed">00:00</span> / <span id="duration">00:36</span></div>
       </div>
       <progress id="progress" value="0" max="36" aria-label="ゲームの進行"></progress>
       <div class="mission-bottom">
-        <div>
-          <p id="message" role="status">走行を開始し、トラブル地点に着く前に対処してください。</p>
+        <div class="mission-main">
+          <p id="message" role="status">各 sol の走行の前に、データを見て計画を送ってください。電力が尽きると失敗です。</p>
+          <dl id="facts" class="facts" hidden></dl>
+          <p id="rule" class="rule" hidden></p>
           <div id="choices" class="choices" hidden></div>
+          <div id="freeform" class="freeform" hidden>
+            <label for="answer" class="visually-hidden">対応策</label>
+            <textarea id="answer" rows="2" placeholder="対応策を書いてください（例：〜して、〜する）"></textarea>
+            <div class="choices"><button id="submit" class="primary">回答を送る</button><button id="give-up">答えを見る（電力 −20%）</button></div>
+          </div>
         </div>
-        <div class="buttons"><button id="start" class="primary" disabled>走行開始</button><button id="reset" disabled>最初から</button></div>
+        <div class="side">
+          <label class="pick mono">アクシデント（テスト版）
+            <select id="accident-pick"><option value="">ランダム</option></select>
+          </label>
+          <div class="buttons"><button id="start" class="primary" disabled>走行開始</button><button id="reset" disabled>最初から</button></div>
+        </div>
       </div>
+      <footer class="sources">
+        <span>実画像・走行線・傾き・時刻・日照は NASA の記録。判断の基準値と電力はゲーム用の設定。時間はデモ用に圧縮。</span>
+        <nav aria-label="データ出典">
+          <a href="https://mars.nasa.gov/mars2020/multimedia/raw-images/">NASA Navcam</a>
+          <a href="https://science.nasa.gov/mission/mars-2020-perseverance/location-map/">JPL 走行線</a>
+          <a href="https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars">Mars Trek</a>
+          <a href="https://pds-geosciences.wustl.edu/missions/mars2020/places.htm">PDS PLACES</a>
+          <a href="https://planetarydata.jpl.nasa.gov/img/data/mars2020/mars2020_navcam_ops_raw/">PDS Navcam ラベル</a>
+        </nav>
+      </footer>
     </section>
-    <footer>
-      <span>時間はデモ用に圧縮。ピンは撮影地点の間を走行線に沿って補間します。</span>
-      <nav aria-label="データ出典">
-        <a href="https://mars.nasa.gov/mars2020/multimedia/raw-images/">NASA Navcam</a>
-        <a href="https://science.nasa.gov/mission/mars-2020-perseverance/location-map/">JPL 走行線</a>
-        <a href="https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars">Mars Trek</a>
-        <a href="https://pds-geosciences.wustl.edu/missions/mars2020/places.htm">PDS PLACES</a>
-      </nav>
-    </footer>
-  </main>
+  </div>
+
+  <section id="big-event" class="big-event" aria-labelledby="be-title" hidden>
+    <div class="be-alert" aria-hidden="true"><span>大型イベント発生</span></div>
+    <div class="be-body">
+      <header class="be-head">
+        <p class="eyebrow">LARGE EVENT</p>
+        <h2 id="be-title">—</h2>
+        <p id="be-lead" class="be-lead">—</p>
+      </header>
+      <figure class="be-media">
+        <div id="be-frame" class="be-frame"><img id="be-img" alt=""><span id="be-marker" class="be-marker" aria-hidden="true"></span></div>
+        <figcaption><span id="be-note">—</span> · <span id="be-credit">—</span></figcaption>
+      </figure>
+      <div class="be-panel glass">
+        <div class="be-info">
+        <p id="be-observed" class="be-observed">—</p>
+        <dl id="be-facts" class="facts"></dl>
+        <p id="be-question" class="be-question">—</p>
+        <div id="be-choices" class="choices"></div>
+        <p id="be-message" class="be-message" role="status"></p>
+        <div class="be-foot">
+          <span id="be-sources" class="be-sources"></span>
+          <button id="be-return" class="primary" hidden>探査画面に戻る</button>
+        </div>
+        </div>
+        <figure class="be-zoom"><span class="be-zoom-view"><img id="be-zoom-img" alt=""></span><figcaption>丸印のあたりを拡大</figcaption></figure>
+      </div>
+    </div>
+  </section>
 </body>
 </html>
