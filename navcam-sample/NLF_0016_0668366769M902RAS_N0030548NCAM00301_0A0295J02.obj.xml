@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/cart/v1/PDS4_CART_1G00_1950.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/disp/v1/PDS4_DISP_1G00_1500.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/img/v1/PDS4_IMG_1G00_1860.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/geom/v1/PDS4_GEOM_1G00_1950.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/proc/v1/PDS4_PROC_1G00_1210.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/msn/v1/PDS4_MSN_1G00_1300.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/msn_surface/v1/PDS4_MSN_SURFACE_1G00_1220.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/img_surface/v1/PDS4_IMG_SURFACE_1G00_1260.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/msss_cam_mh/v1/PDS4_MSSS_CAM_MH_1G00_1030.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.sch" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+
+<Product_Observational xmlns="http://pds.nasa.gov/pds4/pds/v1" 
+    xmlns:cart="http://pds.nasa.gov/pds4/cart/v1" 
+    xmlns:disp="http://pds.nasa.gov/pds4/disp/v1" 
+    xmlns:geom="http://pds.nasa.gov/pds4/geom/v1" 
+    xmlns:img="http://pds.nasa.gov/pds4/img/v1" 
+    xmlns:img_surface="http://pds.nasa.gov/pds4/img_surface/v1" 
+    xmlns:mars2020="http://pds.nasa.gov/pds4/mission/mars2020/v1" 
+    xmlns:msn="http://pds.nasa.gov/pds4/msn/v1" 
+    xmlns:msn_surface="http://pds.nasa.gov/pds4/msn_surface/v1" 
+    xmlns:msss_cam_mh="http://pds.nasa.gov/pds4/msss_cam_mh/v1" 
+    xmlns:pds="http://pds.nasa.gov/pds4/pds/v1" 
+    xmlns:proc="http://pds.nasa.gov/pds4/proc/v1" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="   http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.xsd   http://pds.nasa.gov/pds4/img/v1 https://pds.nasa.gov/pds4/img/v1/PDS4_IMG_1G00_1860.xsd      http://pds.nasa.gov/pds4/proc/v1 https://pds.nasa.gov/pds4/proc/v1/PDS4_PROC_1G00_1210.xsd      http://pds.nasa.gov/pds4/msn/v1 https://pds.nasa.gov/pds4//msn/v1/PDS4_MSN_1G00_1300.xsd   http://pds.nasa.gov/pds4/msn_surface/v1 https://pds.nasa.gov/pds4/msn_surface/v1/PDS4_MSN_SURFACE_1G00_1220.xsd   http://pds.nasa.gov/pds4/img_surface/v1 https://pds.nasa.gov/pds4/img_surface/v1/PDS4_IMG_SURFACE_1G00_1260.xsd   http://pds.nasa.gov/pds4/geom/v1 https://pds.nasa.gov/pds4/geom/v1/PDS4_GEOM_1G00_1950.xsd   http://pds.nasa.gov/pds4/disp/v1 https://pds.nasa.gov/pds4/disp/v1/PDS4_DISP_1G00_1500.xsd   http://pds.nasa.gov/pds4/cart/v1 https://pds.nasa.gov/pds4/cart/v1/PDS4_CART_1G00_1950.xsd   http://pds.nasa.gov/pds4/msss_cam_mh/v1 https://pds.nasa.gov/pds4/msss_cam_mh/v1/PDS4_MSSS_CAM_MH_1G00_1030.xsd   http://pds.nasa.gov/pds4/mission/mars2020/v1 https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.xsd">
+  <Identification_Area>
+    <logical_identifier>urn:nasa:pds:mars2020_navcam_ops_mesh:data:nlf_0016_0668366769m902ras_n0030548ncam00301_0a0295j.obj</logical_identifier>
+    <version_id>2.0</version_id>
+    <title>Mars2020 Terrain Mesh in OBJ format</title>
+    <information_model_version>1.16.0.0</information_model_version>
+    <product_class>Product_Observational</product_class>
+  </Identification_Area>
+  <Observation_Area>
+    <Time_Coordinates>
+      <start_date_time>2021-03-07T05:27:51.312Z</start_date_time>
+      <stop_date_time>2021-03-07T05:27:52.842Z</stop_date_time>
+    </Time_Coordinates>
+    <Investigation_Area>
+      <name>Mars2020</name>
+      <type>Mission</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:investigation:mission.mars2020</lid_reference>
+        <reference_type>data_to_investigation</reference_type>
+      </Internal_Reference>
+    </Investigation_Area>
+    <Observing_System>
+      <Observing_System_Component>
+        <name>Mars 2020</name>
+        <type>Host</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument_host:spacecraft.mars2020</lid_reference>
+          <reference_type>is_instrument_host</reference_type>
+          <comment>This is the PDS4 logical identifier for the Mars 2020 spacecraft.</comment>
+        </Internal_Reference>
+      </Observing_System_Component>
+    </Observing_System>
+    <Target_Identification>
+      <name>Mars</name>
+      <type>Planet</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:target:planet.mars</lid_reference>
+        <reference_type>data_to_target</reference_type>
+        <comment>This is the PDS4 logical identifier for the planet - mars.</comment>
+      </Internal_Reference>
+    </Target_Identification>
+    <Mission_Area/>
+    <Discipline_Area>
+      <geom:Geometry>
+        <geom:Geometry_Lander>
+          <geom:Motion_Counter>
+            <geom:name>RMC</geom:name>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>site</geom:index_id>
+              <geom:index_value_number>3</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>drive</geom:index_id>
+              <geom:index_value_number>548</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>pose</geom:index_id>
+              <geom:index_value_number>2</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>arm</geom:index_id>
+              <geom:index_value_number>0</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>sha</geom:index_id>
+              <geom:index_value_number>0</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>drill</geom:index_id>
+              <geom:index_value_number>0</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>rsm</geom:index_id>
+              <geom:index_value_number>2</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>hga</geom:index_id>
+              <geom:index_value_number>0</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>bitcar</geom:index_id>
+              <geom:index_value_number>0</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+            <geom:Motion_Counter_Index>
+              <geom:index_id>seal</geom:index_id>
+              <geom:index_value_number>0</geom:index_value_number>
+            </geom:Motion_Counter_Index>
+          </geom:Motion_Counter>
+        </geom:Geometry_Lander>
+      </geom:Geometry>
+      <img_surface:Surface_Imaging>
+        <img_surface:Derived_Product_Parameters>
+          <geom:Coordinate_Space_Reference>
+            <geom:Coordinate_Space_Indexed>
+              <geom:coordinate_space_frame_type>SITE_FRAME</geom:coordinate_space_frame_type>
+              <geom:Coordinate_Space_Index>
+                <geom:index_id>SITE</geom:index_id>
+                <geom:index_value_number>3</geom:index_value_number>
+              </geom:Coordinate_Space_Index>
+            </geom:Coordinate_Space_Indexed>
+          </geom:Coordinate_Space_Reference>
+        </img_surface:Derived_Product_Parameters>
+      </img_surface:Surface_Imaging>
+    </Discipline_Area>
+  </Observation_Area>
+  <Reference_List>
+    <Source_Product_Internal>
+      <lidvid_reference>urn:nasa:pds:mars2020_navcam_ops_mesh:data:nlf_0016_0668366769m902ras_n0030548ncam00301_0a0295j::2.0</lidvid_reference>
+      <reference_type>data_to_calibrated_source_product</reference_type>
+      <comment>Pointer to the mesh skin (texture).</comment>
+    </Source_Product_Internal>
+    <Source_Product_Internal>
+      <lidvid_reference>urn:nasa:pds:mars2020_navcam_ops_mesh:data:nlf_0016_0668366769_902xym_n0030548ncam00301_0a0295j::3.0</lidvid_reference>
+      <reference_type>data_to_calibrated_source_product</reference_type>
+      <comment>Pointer to the XYZ product from which the geometry is derived.</comment>
+    </Source_Product_Internal>
+  </Reference_List>
+  <File_Area_Observational>
+    <File>
+      <file_name>NLF_0016_0668366769M902RAS_N0030548NCAM00301_0A0295J02.obj</file_name>
+    </File>
+    <Table_Delimited>
+      <name>OBJ Material Reference Table</name>
+      <offset unit="byte">0</offset>
+      <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+      <description>Material file for the OBJ file</description>
+      <records>1</records>
+      <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+      <field_delimiter>Horizontal Tab</field_delimiter>
+      <Record_Delimited>
+        <fields>1</fields>
+        <groups>0</groups>
+        <Field_Delimited>
+          <name>mtllib</name>
+          <field_number>1</field_number>
+          <data_type>ASCII_String</data_type>
+          <description>Description of .mtl file.</description>
+        </Field_Delimited>
+      </Record_Delimited>
+    </Table_Delimited>
+    <Table_Delimited>
+      <name>OBJ Material Name Table</name>
+      <offset unit="byte">67</offset>
+      <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+      <description>Material name referenced by OBJ file</description>
+      <records>1</records>
+      <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+      <field_delimiter>Horizontal Tab</field_delimiter>
+      <Record_Delimited>
+        <fields>1</fields>
+        <groups>0</groups>
+        <Field_Delimited>
+          <name>usemtl</name>
+          <field_number>1</field_number>
+          <data_type>ASCII_String</data_type>
+          <description>Describes which material to use.</description>
+        </Field_Delimited>
+      </Record_Delimited>
+    </Table_Delimited>
+    <Table_Delimited>
+      <name>OBJ Vertices Table</name>
+      <offset unit="byte">130</offset>
+      <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+      <description>Table of Vertices of the OBJ file</description>
+      <records>224233</records>
+      <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+      <field_delimiter>Horizontal Tab</field_delimiter>
+      <Record_Delimited>
+        <fields>4</fields>
+        <groups>0</groups>
+        <Field_Delimited>
+          <name>OBJ Datatype</name>
+          <field_number>1</field_number>
+          <data_type>ASCII_String</data_type>
+          <description>v letter for vertex</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>VertX</name>
+          <field_number>2</field_number>
+          <data_type>ASCII_Real</data_type>
+          <description>X coordinate of the Vertex in Specific Reference Frame.</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>Vertex Y</name>
+          <field_number>3</field_number>
+          <data_type>ASCII_Real</data_type>
+          <description>Y coordinate of the vertex in Specific Site Reference Frame.</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>Vertex Z</name>
+          <field_number>4</field_number>
+          <data_type>ASCII_Real</data_type>
+          <description>Z coordinate of the vertex in Specific Reference Frame.</description>
+        </Field_Delimited>
+      </Record_Delimited>
+    </Table_Delimited>
+    <Table_Delimited>
+      <name>OBJ Texture Coordinates Table</name>
+      <offset unit="byte">7613060</offset>
+      <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+      <description>Table of Texture Coordinates of the OBJ file</description>
+      <records>1304136</records>
+      <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+      <field_delimiter>Horizontal Tab</field_delimiter>
+      <Record_Delimited>
+        <fields>3</fields>
+        <groups>0</groups>
+        <Field_Delimited>
+          <name>OBJ Datatype</name>
+          <field_number>1</field_number>
+          <data_type>ASCII_String</data_type>
+          <description>vt letter for UV Texture Mapping</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>TextU</name>
+          <field_number>2</field_number>
+          <data_type>ASCII_Real</data_type>
+          <description>U coordinate of the UV Texture Mapping.</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>Texture Mapping Coordinate V</name>
+          <field_number>3</field_number>
+          <data_type>ASCII_Real</data_type>
+          <description>V Coordinate of the UV Texture Mapping.</description>
+        </Field_Delimited>
+      </Record_Delimited>
+    </Table_Delimited>
+    <Table_Delimited>
+      <name>Faces Table</name>
+      <offset unit="byte">32391644</offset>
+      <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+      <description>Table of Faces of the OBJ file</description>
+      <records>434711</records>
+      <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+      <field_delimiter>Horizontal Tab</field_delimiter>
+      <Record_Delimited>
+        <fields>4</fields>
+        <groups>0</groups>
+        <Field_Delimited>
+          <name>OBJ Datatype</name>
+          <field_number>1</field_number>
+          <data_type>ASCII_String</data_type>
+          <description>Face Element</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>Index 1</name>
+          <field_number>2</field_number>
+          <data_type>ASCII_String</data_type>
+          <description>Index of the first vertex of the face.</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>Index 2</name>
+          <field_number>3</field_number>
+          <data_type>ASCII_String</data_type>
+          <description>Index of the second vertex of the face.</description>
+        </Field_Delimited>
+        <Field_Delimited>
+          <name>Index 3</name>
+          <field_number>4</field_number>
+          <data_type>ASCII_String</data_type>
+          <description>Index of the third vertex of the face.</description>
+        </Field_Delimited>
+      </Record_Delimited>
+    </Table_Delimited>
+  </File_Area_Observational>
+  <File_Area_Observational_Supplemental>
+    <File>
+      <file_name>NLF_0016_0668366769M902RAS_N0030548NCAM00301_0A0295J02.mtl</file_name>
+    </File>
+    <Stream_Text>
+      <offset unit="byte">0</offset>
+      <parsing_standard_id>7-Bit ASCII Text</parsing_standard_id>
+      <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+    </Stream_Text>
+  </File_Area_Observational_Supplemental>
+  <File_Area_Observational_Supplemental>
+    <File>
+      <file_name>NLF_0016_0668366769M902RAS_N0030548NCAM00301_0A0295J02.png</file_name>
+    </File>
+    <Encoded_Image>
+      <offset unit="byte">0</offset>
+      <encoding_standard_id>PNG</encoding_standard_id>
+    </Encoded_Image>
+  </File_Area_Observational_Supplemental>
+</Product_Observational>
