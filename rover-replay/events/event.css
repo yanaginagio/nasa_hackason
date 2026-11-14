@@ -1,0 +1,30 @@
+main { padding-bottom: 36px; }
+.heading h1 { font-size: clamp(32px,6vw,60px); }
+.brief { color: var(--muted); max-width: 75ch; }
+.modes { display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 12px; }
+.modes [aria-pressed="true"] { color:#142413; background:var(--mint); }
+.event-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:14px; }
+.challenge,.dossier,.reveal { padding:clamp(15px,3vw,28px); }
+.challenge h2,.reveal h2,.dossier h2 { font-size:clamp(21px,4vw,32px); margin-bottom:14px; }
+.dossier strong,.reading strong { display:block; color:var(--mint); font-size:clamp(22px,4vw,39px); }
+#clues,#feedback,#takeaway,#reflection,.sources { margin-top:12px; }
+#feedback:empty,#reflection:empty { display:none; }
+fieldset { border:0; margin:15px 0; padding:0; min-width:0; }
+legend { margin-bottom:5px; color:var(--muted); }
+#inputs { display:grid; gap:7px; }
+.option { display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; }
+input { accent-color:var(--mint); }
+select,textarea { width:100%; font:inherit; color:inherit; background:#111713; border:1px solid #607264; border-radius:6px; padding:8px; }
+textarea { display:block; margin:5px 0 12px; resize:vertical; }
+.reveal { margin-top:16px; }
+.reading {display:flex; align-items:center; gap:clamp(10px,4vw,32px); margin:12px 0 20px; }
+.reveal img { display:block; width:100%; height:auto; border-radius:8px; }
+figcaption { color:var(--muted); font-size:12px; margin-top:6px; }
+ul { padding-left:1.3em; }
+li { margin-bottom:8px; }
+#retry { margin-top:14px; }
+@media(max-width:680px){.event-grid{grid-template-columns:1fr}.dossier{grid-row:1}.top{flex-direction:row;align-items:center}}
+.photo-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.photo-pair img { aspect-ratio:1; object-fit:contain; background:#111713; }
+.photo-credit { color:var(--muted); font-size:11px; margin-top:7px; overflow-wrap:anywhere; }
+#result { color:var(--mint); font-weight:650; }

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event | Opportunity 2014</title>
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="event.css">
+<script defer src="event.js"></script>
+</head>
+<body>
+<header class="shell top"><a href="../">← 走行デモ</a><p class="eyebrow">MARS EXPLORATION ROVER / OPPORTUNITY</p></header>
+<main class="shell">
+  <p style="margin-top:16px"><a href="rock/">岩石調査イベントを遊ぶ →</a></p>
+  <div class="heading"><div><p class="eyebrow">EVENT · 2014</p><h1>消えかけた電力</h1></div></div>
+  <p class="brief">2014年1月。太陽光で動くオポチュニティは、パネルにほこりが積もり、1日の発電量が375 Whを下回っています。数か月後、管制チームは予想外の変化を目にします。</p>
+  <nav class="modes" aria-label="遊び方">
+    <button data-mode="forecast" aria-pressed="true">発電量を予測</button>
+    <button data-mode="detective" aria-pressed="false">原因を推理</button>
+    <button data-mode="evidence" aria-pressed="false">証拠を選ぶ</button>
+    <button data-mode="order" aria-pressed="false">記録を並べる</button>
+    <button data-mode="budget" aria-pressed="false">電力を配分</button>
+  </nav>
+  <div class="event-grid">
+    <section class="panel challenge" aria-labelledby="task">
+      <h2 id="task" tabindex="-1"></h2>
+      <p id="prompt"></p>
+      <form id="challenge">
+        <fieldset><legend>あなたの判断</legend><div id="inputs"></div></fieldset>
+        <label for="reason">判断した理由（任意）</label>
+        <textarea id="reason" rows="2" maxlength="360" placeholder="どの情報を根拠にしましたか？"></textarea>
+        <button class="primary" type="submit">判断を確定</button>
+        <p id="feedback" role="status"></p>
+      </form>
+    </section>
+    <section class="panel dossier" aria-labelledby="dossier">
+      <h2 id="dossier">管制ログ</h2>
+      <p class="eyebrow">2014年1月</p>
+      <strong>375 Wh未満</strong>
+      <p>太陽光パネルにほこりが堆積。清掃専用の装置はありません。</p>
+      <div id="clues"></div>
+    </section>
+  </div>
+  <section class="panel reveal" id="reveal" hidden aria-labelledby="reveal-title">
+    <p class="eyebrow">NASAの記録</p>
+    <h2 id="reveal-title" tabindex="-1">風がパネルのほこりを吹き払った</h2>
+    <div class="reading"><div>2014年1月<strong>375 Wh未満</strong></div><span aria-hidden="true">→</span><div>2014年4月中旬<strong>620 Wh超</strong></div></div>
+    <div class="event-grid">
+      <div>
+        <div class="photo-pair">
+          <figure><img src="opportunity-january.jpg" loading="lazy" alt="ほこりが積もった太陽光パネル"><figcaption>1月 · 清掃前</figcaption></figure>
+          <figure><img src="opportunity.jpg" loading="lazy" alt="風でほこりが減った太陽光パネル"><figcaption>3月下旬 · 清掃後</figcaption></figure>
+        </div>
+        <p class="photo-credit">NASA/JPL-Caltech/Cornell/Arizona State University</p>
+      </div>
+      <div>
+        <h3>観測からわかること</h3>
+        <ul>
+          <li>風による自然清掃（Cleaning Event）で、パネルを覆っていたほこりの一部が取り除かれました。</li>
+          <li>NASAは、パネルがきれいになったことと、日が長くなったことの両方を発電量増加の要因に挙げています。発電量だけでは、それぞれの寄与はわかりません。</li>
+          <li>電力回復で活動に使える余裕が増えました。火星では、パネルに積もるほこりと、大気中で日光を遮るほこりの両方が発電に影響します。</li>
+        </ul>
+        <p id="result"></p>
+        <p id="takeaway"></p>
+        <p id="reflection"></p>
+        <p class="sources"><a href="https://www.jpl.nasa.gov/news/nasa-rover-opportunitys-selfie-shows-clean-machine/">JPLの観測報告</a> · <a href="https://science.nasa.gov/photojournal/self-portrait-by-freshly-cleaned-opportunity-mars-rover-in-march-2014/">NASAの画像と発電記録</a></p>
+        <button id="retry" type="button">この遊び方をもう一度</button>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

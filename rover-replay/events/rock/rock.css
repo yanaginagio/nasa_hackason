@@ -1,0 +1,32 @@
+.rock-event { margin: auto; max-width: 1120px; padding: 0 18px 32px; }
+.rock-header { min-height: 64px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.rock-header p, .rock-progress, .rock-hud > span:first-child { font: 12px var(--mono); }
+button.rock-stage {
+  position: relative; isolation: isolate; display: grid; place-items: center; width: 100%;
+  height: clamp(270px, 74svh, 850px); padding: 12px; overflow: hidden;
+  border: 1px solid #697768; background: #252723; touch-action: manipulation;
+  user-select: none; cursor: crosshair;
+}
+button.rock-stage:disabled { opacity: 1; cursor: default; }
+.rock-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+#next { clip-path: circle(var(--reveal, 0%) at 50% 50%); transition: clip-path .13s linear; }
+.rock-hud { position: relative; display: grid; justify-items: center; gap: 12px; color: white; }
+.rock-hud span { background: #101510ee; padding: 6px 12px; border-radius: 6px; }
+.rock-hud strong {
+  font-size: clamp(32px, 10vw, 142px); line-height: 1.13; font-weight: 900; letter-spacing: -.065em;
+  color: #fff3cc; text-shadow: 0 4px 0 #412519, 0 0 12px #000, 0 0 28px #000;
+}
+.rock-stage[data-clear="true"] .rock-hud { align-self: start; margin-top: 12px; }
+.rock-stage[data-clear="true"] strong { color: var(--mint); }
+.rock-progress { display: flex; align-items: center; gap: 12px; }
+.rock-progress output { white-space: nowrap; }
+.credit { color: var(--muted); font-size: 12px; margin: 5px 0 14px; }
+.results { padding: clamp(16px, 4vw, 34px); }
+.findings { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.findings > div { padding: 10px; background: #252e27; border-radius: 6px; }
+.findings dt { color: var(--mint); }
+.findings dd { margin: 4px 0 0; }
+.records { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media(max-width:600px) { .findings { grid-template-columns: 1fr; } }
+@media(prefers-reduced-motion:reduce) { #next { transition: none; } }
