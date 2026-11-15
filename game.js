@@ -37,8 +37,8 @@ const RULES = {
   driveEndLimit: "15:30", // finish driving by this local mean solar time
   power: {
     start: 100,           // %
-    planDrain: 1.0,       // % per real second while deciding a plan
-    accidentDrain: 1.5,   // % per real second while an accident is unsolved
+    planDrain: 0.5,       // % per real second while deciding a plan
+    accidentDrain: 0.75,  // % per real second while an accident is unsolved
     wrongChoice: 12,      // % lost per wrong plan choice
     wrongAnswer: 8,       // % lost per rejected accident answer
     giveUp: 20,           // % lost when revealing the answer
