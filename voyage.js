@@ -1157,8 +1157,7 @@ try {
   begin.addEventListener("click", () => { sound.unlock(); story("launch"); });
   const scene = params.get("scene");
   if (document.body.dataset.scene === "voyage" && !root.classList.contains("leaving")) {
-    if (scene === "rover") { results.voyage = null; showRoverIntro(false); }
-    else if (["cruise", "landing"].includes(scene)) { sound.unlock(); story(scene); }
+    if (["cruise", "landing"].includes(scene)) { sound.unlock(); story(scene); }
     else if (document.activeElement === document.body) begin.focus();
   }
 } catch (error) {
