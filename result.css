@@ -19,7 +19,8 @@
 @keyframes rs-title { from { transform: scale(2.2); opacity: 0; filter: blur(10px); } to { transform: none; opacity: 1; filter: none; } }
 @keyframes rs-shine { to { background-position: -220% 0; } }
 .rs-sub { font-size: 16px; color: #dfe7d6; }
-.rs-fx-note { font-size: 11px; color: var(--muted); }
+/* Watermark for the confetti and fireworks, shown only while they play. */
+.rs-fx-note { position: fixed; right: 14px; bottom: 10px; z-index: 3; font: 500 10px/1.4 var(--mono); letter-spacing: .04em; color: rgba(234,240,223,.62); text-shadow: 0 1px 2px #000; pointer-events: none; }
 
 .rs-score { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 20px; padding: 16px 22px; }
 .rs-rank { width: 112px; height: 112px; display: grid; place-items: center; border-radius: 50%; font: 800 64px/1 var(--mono);

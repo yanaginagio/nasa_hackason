@@ -190,6 +190,7 @@ function celebrate(canvas) {
     ctx.globalAlpha = 1;
     for (let i = bits.length - 1; i >= 0; i -= 1) if (bits[i].life <= 0) bits.splice(i, 1);
     if (bits.length || schedule.length) fxRequest = requestAnimationFrame(step);
+    else $("rs-fx-note").hidden = true; // the watermark goes with the effects
   };
   fxRequest = requestAnimationFrame(step);
 }

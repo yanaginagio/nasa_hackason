@@ -125,7 +125,8 @@ function fmtKm(km) {
   return `${Math.round(km).toLocaleString("ja-JP")} km`;
 }
 function fmtDuration(sec) {
-  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  const total = Math.round(sec); // round first, so 119.6 s reads 2 min 00 s, not 1 min 60 s
+  const m = Math.floor(total / 60), s = total % 60;
   return m ? tr(`${m}分${String(s).padStart(2, "0")}秒`, `${m} min ${String(s).padStart(2, "0")} s`) : tr(`${s}秒`, `${s} s`);
 }
 const tPlus = (sec) => `T+${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;
@@ -166,11 +167,12 @@ function buildMarks() {
   $("vg-marks").replaceChildren(mark);
 }
 
-// Tell the viewer what they are looking at: NASA footage, or graphics made by AI.
+// A small watermark over the picture: NASA footage, or graphics made with SI (AI),
+// as the Space Apps rules ask for SI-generated images and video.
 const BADGES = {
-  nasa: ["real", "実写：NASA の映像", "NASA footage"],
-  cg: ["ai", "AI生成のCG（実写ではありません）", "AI-generated graphics"],
-  map: ["mix", "地図：NASA（PIA23970）／機体と演出：AI生成のCG", "NASA map (PIA23970) · AI-generated spacecraft and effects"],
+  nasa: ["real", "NASA の実写", "NASA footage"],
+  cg: ["ai", "AI生成のCG", "SI-generated graphics"],
+  map: ["mix", "地図：NASA（PIA23970）・機体：AI生成のCG", "NASA map (PIA23970) · SI-generated lander"],
 };
 function badge(kind) {
   const el = $("vg-badge");
@@ -948,7 +950,7 @@ async function runTrn() {
     card({kind: "warn", label: tr("最大の難所", "Landing challenge"), title: tr("着陸地点へ回避：地形相対航法", "Divert to the landing site: Terrain-relative navigation"),
       message: tr("NASA が着陸のために作った実際の危険度マップです。青は安全、黄は注意、赤は危険（崖・岩の多い場所・砂丘など）。赤の上を通らず、最後は青の上に降りてください。← → ↑ ↓・マウス・指で動かします。風で南東へ流されます。", "This is NASA’s hazard map for the landing. Blue is safe, yellow calls for caution, and red marks hazards such as cliffs, rocks, and dunes. Avoid red areas and land on blue. Steer with the arrow keys, mouse, or touch. Wind pushes you southeast."),
       facts: [[tr("着陸の責任者の言葉", "Landing team lead"), tr("「これまでで最も危険な着陸地点」", "“The most challenging landing site”")], [tr("回避を始める高度", "Divert start altitude"), tr("約2.6 km（管制の読み上げ）", "About 2.6 km (mission control)")], [tr("地図", "Map"), tr("NASA PIA23970（HiRISE の画像から作成）", "NASA PIA23970 (from HiRISE imagery)")]],
-      note: tr("地図と高度は NASA の記録。機体の絵・風の強さ・ダメージはゲームの設定です（AI生成のCG）。右下の小窓は同じ時間帯の実際の映像です。", "The map and altitude come from NASA records. The spacecraft graphic is AI-generated, and wind and damage are gameplay settings. The inset shows real footage from this phase."),
+      note: tr("地図と高度は NASA の記録。風の強さとダメージはゲームの設定です。右下の小窓は同じ時間帯の実際の映像です。", "The map and altitude come from NASA records. Wind and damage are gameplay settings. The inset shows real footage from this phase."),
       sources: [SOURCES.hazard, SOURCES.usgs, SOURCES.chen]});
     $("vg-timer").textContent = "";
     sound.play("warn");

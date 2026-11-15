@@ -3,7 +3,8 @@
 //   microphone, plays while the rover drives; faint wind from SuperCam on Sol 1 plays
 //   underneath. Both files are in assets/audio/.
 // - Event sounds are synthesized here with the Web Audio API, so no sound files or
-//   licences are needed for them.
+//   licences are needed for them. This synthesis code was written with SI (AI)
+//   assistance (Claude); see "SI（AI）の使用" in README.md.
 // Browsers only allow sound after the player does something, so start() is called
 // from the first click.
 
