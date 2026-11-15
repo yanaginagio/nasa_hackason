@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Perseveranceの実画像と走行データで遊ぶ火星探査シミュレーション" data-en-content="Explore Mars using real Perseverance imagery and drive data">
   <title data-en="Jezero Traverse | Mars Exploration Simulator">Jezero Traverse | 火星探査シミュレーション</title>
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
   <link rel="stylesheet" href="voyage.css?v=5">
   <link rel="stylesheet" href="result.css">
-  <script src="game.js?v=8" type="module"></script>
+  <script src="game.js?v=9" type="module"></script>
   <script src="voyage.js?v=6" type="module"></script>
 </head>
 <body data-scene="voyage">
@@ -113,6 +113,8 @@
 
   <div class="screen" data-mode="panel" data-ready>
     <img id="photo" class="backdrop" alt="Perseveranceの左Navcamが撮影した火星の地表" data-en-alt="Martian surface captured by Perseverance’s left Navcam">
+
+    <div id="plan-success" class="success-banner plan-success" role="status" hidden><span data-en="Correct">正解</span></div>
 
     <div id="rover-intro" class="rover-intro" hidden>
       <section class="glass controls rover-intro-card" aria-label="探査シナリオ" data-en-label="Exploration briefing">
@@ -289,7 +291,9 @@
         <p id="be-lead" class="be-lead">—</p>
       </header>
       <figure class="be-media">
-        <div id="be-frame" class="be-frame"><img id="be-img" alt=""><span id="be-marker" class="be-marker" aria-hidden="true"></span><span id="be-reticle" aria-hidden="true" hidden></span></div>
+        <div class="be-picture">
+          <div id="be-frame" class="be-frame"><img id="be-img" alt=""><span id="be-marker" class="be-marker" aria-hidden="true"></span><span id="be-reticle" aria-hidden="true" hidden></span></div>
+        </div>
         <figcaption><span id="be-note">—</span> · <span id="be-credit">—</span></figcaption>
       </figure>
       <div class="be-panel glass">
@@ -315,7 +319,7 @@
         <figure class="be-zoom"><span class="be-zoom-view"><img id="be-zoom-img" alt=""></span><figcaption data-en="Close-up of the marked area">丸印のあたりを拡大</figcaption></figure>
       </div>
     </div>
-    <div id="be-success" class="be-success" role="status" hidden></div>
+    <div id="be-success" class="success-banner" role="status" hidden></div>
     <dialog id="be-result" aria-labelledby="be-result-title" aria-describedby="be-result-summary">
       <h2 id="be-result-title"></h2>
       <p id="be-result-summary"></p>
