@@ -1018,28 +1018,49 @@ async function sceneArrival() {
   const v = results.voyage;
   const summary = v?.hull !== undefined ? tr(`着陸の結果：機体 ${v.hull}%・${v.safe ? (v.near ? "実際の着陸地点に着地" : "安全な場所に着地") : "危険な場所に着地"}`, ` Landing result: Hull ${v.hull}% · ${v.safe ? (v.near ? "Reached the real landing site" : "Landed in a safe area") : "Landed in a hazard zone"}.`) : "";
   caption(tr("探査開始！", "Exploration begins!"), tr(`2021年2月18日 ジェゼロ・クレーターに着陸。${summary}`, `Perseverance landed in Jezero Crater on February 18, 2021.${summary}`), 0);
-  clockPill("Sol 15", tr("着陸から15 sol 後、最初の本格的な走行へ", "Heading for the first major drive, 15 sols after touchdown"));
+  clockPill("2021-02-18", tr("着陸の日", "Landing day"));
   await new Promise((resolve) => setTimeout(resolve, 3600));
-  enterRover(true);
+  showRoverIntro(true);
 }
 
-function enterRover(autoStart) {
+function showRoverIntro(autoStart) {
+  if (document.body.dataset.scene !== "voyage" || root.inert) return;
+  root.inert = true;
   sceneToken += 1;
   stopVideo();
   sound.drone(false);
-  root.classList.add("leaving");
-  setTimeout(() => {
-    document.body.dataset.scene = "rover";
+
+  const intro = $("rover-intro");
+  const next = $("rover-intro-next");
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reveal = () => {
+    document.body.dataset.scene = "rover-intro";
     root.classList.remove("leaving");
-    if (!autoStart) { document.getElementById("start")?.focus(); return; }
-    const start = document.getElementById("start");
-    const began = performance.now();
-    const tryStart = () => {
-      if (start && !start.disabled) start.click();
-      else if (performance.now() - began < 20000) setTimeout(tryStart, 200);
-    };
-    tryStart();
-  }, autoStart ? 900 : 300);
+    intro.hidden = false;
+    next.focus();
+  };
+  if (reduceMotion) {
+    reveal();
+  } else {
+    root.classList.add("leaving");
+    setTimeout(reveal, autoStart ? 900 : 300);
+  }
+
+  next.addEventListener("click", async () => {
+    next.disabled = true;
+    if (autoStart) sound.unlock();
+    if (!reduceMotion) {
+      await intro.animate(
+        {opacity: [1, 0], transform: ["translateY(0)", "translateY(-8px)"]},
+        {duration: 240, easing: "ease-in", fill: "forwards"},
+      ).finished;
+    }
+    intro.hidden = true;
+    document.body.dataset.scene = "rover";
+    const start = $("start");
+    if (autoStart && !start.disabled) start.click();
+    start.focus({preventScroll: true});
+  }, {once: true});
 }
 
 async function story(from = "launch") {
@@ -1117,7 +1138,7 @@ renderHull();
 badge("cg");
 requestAnimationFrame(frame);
 
-$("vg-to-rover").addEventListener("click", () => { results.voyage = null; enterRover(false); });
+$("vg-to-rover").addEventListener("click", () => { results.voyage = null; showRoverIntro(false); });
 
 try {
   const [voyage, mission] = await Promise.all(["voyage", "mission"].map(async (name) => {
@@ -1136,8 +1157,7 @@ try {
   begin.addEventListener("click", () => { sound.unlock(); story("launch"); });
   const scene = params.get("scene");
   if (document.body.dataset.scene === "voyage" && !root.classList.contains("leaving")) {
-    if (scene === "rover") { results.voyage = null; enterRover(false); }
-    else if (["cruise", "landing"].includes(scene)) { sound.unlock(); story(scene); }
+    if (["cruise", "landing"].includes(scene)) { sound.unlock(); story(scene); }
     else if (document.activeElement === document.body) begin.focus();
   }
 } catch (error) {
