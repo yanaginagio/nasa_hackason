@@ -162,6 +162,7 @@ h1, h2, h3, p, figure { margin: 0; }
 body[data-scene="rover-intro"] .screen > :not(.backdrop, .rover-intro) { visibility: hidden; }
 .rover-intro-card { width: min(640px, 100%); max-height: 100%; min-height: 0; padding: clamp(14px, 3vw, 26px); gap: 12px; }
 .rover-intro-card p { font-size: clamp(16px, 2vw, 19px); line-height: 1.75; }
+.rover-intro-card strong { color: var(--mint); }
 #rover-intro-next { justify-self: end; min-width: 48px; min-height: 44px; }
 #rover-intro-next span { display: inline-block; animation: rover-intro-pulse 1.25s ease-in-out infinite alternate; }
 @keyframes rover-intro-pulse { from { opacity: .45; } to { opacity: 1; } }
