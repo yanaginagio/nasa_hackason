@@ -2,6 +2,11 @@
 
 Perseverance の打ち上げ・火星への航行・着陸を NASA の実映像と軌道データでたどり、着陸後はジェゼロ・クレーターの実走行線を再生する36秒の探査ゲームに続きます。Sol 16・20・23の各走行の前に、NASAの記録（地形の傾き・現地時刻と日照・画像の到着）を見て走行計画を決めます。
 
+## デプロイ
+
+Cloudflareにデプロイしています。以下のURLで公開しています。
+https://jezero-traverse.yanaginagio.workers.dev/
+
 ## 起動
 
 リポジトリのルートで実行し、ブラウザで http://localhost:8417/ を開きます。
@@ -135,3 +140,7 @@ python3 -m http.server 8417 --bind 127.0.0.1 --directory rover-replay
 - [NASA/JPLのMMGIS走行線](https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json)から対象の3区間を使います。ピンは撮影地点の間を走行線に沿って補間します。画像は6秒間隔で切り替わります。
 - 背景は[NASA Mars TrekのJezero HiRISE WMTS](https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars)です。必要な2タイルを保存し、WMTSのタイルグリッドで走行線と位置を合わせています。
 - 判断の基準値（傾き3°、LMST 15:30）・選択肢・電力の増減はゲーム用の設定です。アクシデントの出来事と対応策は実際の事例で、出典を `assets/accidents.json` に入れてあります。ゲームでは Perseverance に起きたものとして出題します。Sol 23 の判断では、計画を送る時刻の代わりに走行開始の時刻を使っています。
+
+## コーディングについて
+
+全てバイブコーディングで作成しています。
