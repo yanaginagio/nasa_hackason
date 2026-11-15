@@ -37,8 +37,8 @@ const RULES = {
   driveEndLimit: "15:30", // finish driving by this local mean solar time
   power: {
     start: 100,           // %
-    planDrain: 1.0,       // % per real second while deciding a plan
-    accidentDrain: 1.5,   // % per real second while an accident is unsolved
+    planDrain: 0.5,       // % per real second while deciding a plan
+    accidentDrain: 0.75,  // % per real second while an accident is unsolved
     wrongChoice: 12,      // % lost per wrong plan choice
     wrongAnswer: 8,       // % lost per rejected accident answer
     giveUp: 20,           // % lost when revealing the answer
@@ -56,6 +56,7 @@ let accidents;
 let accident;
 let bigEvents;
 let toastTimer;
+let planSuccessTimer;
 let duration;
 let plans;
 let events;
@@ -555,8 +556,8 @@ function showStatus(heading, detail, alert = false, kind = alert ? "fail" : "inf
   setFocus([]);
 }
 
-function fillFacts(rows) {
-  facts.replaceChildren(...rows.map(([label, value]) => {
+function fillFacts(list, rows) {
+  list.replaceChildren(...rows.map(([label, value]) => {
     const tile = document.createElement("div");
     const term = document.createElement("dt");
     const detail = document.createElement("dd");
@@ -580,7 +581,7 @@ function showPlan(index) {
     spend(-gain, gain > 0 ? tr(`前回の走行から ${idle} sol 休止：MMRTG で充電 +${Math.round(gain)}%`, `After ${idle} sol(s) idle: radioisotope generator recharged +${Math.round(gain)}%`)
       : tr(`前回の走行から ${idle} sol 休止：電力は満タン`, `After ${idle} sol(s) idle: power is full`));
   }
-  fillFacts(plan.facts);
+  fillFacts(facts, plan.facts);
   rule.textContent = plan.rule ? tr(`ヒント：${plan.rule}`, `Hint: ${plan.rule}`) : "";
   choices.replaceChildren(...plan.options.map((option, choice) => {
     const button = document.createElement("button");
@@ -597,7 +598,7 @@ function showAccident(index) {
   showStatus(accident.title, accident.situation, true, "accident");
   activeEvent = index;
   sound.play("accident");
-  fillFacts([[tr("回答", "Your response"), tr("ひとことで答えられます。考えている間も電力が減ります（Ctrl+Enter でも送信）。", "Answer with a word or short phrase. Power drains while you decide. Press Ctrl+Enter to submit.")]]);
+  fillFacts(facts, [[tr("回答", "Your response"), tr("ひとことで答えられます。考えている間も電力が減ります（Ctrl+Enter でも送信）。", "Answer with a word or short phrase. Power drains while you decide. Press Ctrl+Enter to submit.")]]);
   facts.hidden = false;
   answer.value = "";
   freeform.hidden = false;
@@ -649,6 +650,10 @@ function resolvePlan(index, choice) {
   const detail = `${plan.options[choice].label}${tr("。", ". ")}${plan.record}`;
   showStatus(tr("計画を送信", "Plan sent"), detail, false, "result");
   toast(tr("計画を送信", "Plan sent"), detail);
+  const banner = byId("plan-success");
+  banner.hidden = false;
+  clearTimeout(planSuccessTimer);
+  planSuccessTimer = setTimeout(() => { banner.hidden = true; }, 1400);
   start.focus();
 }
 
@@ -704,13 +709,7 @@ function showBigEvent(index) {
   byId("be-observed").textContent = data.observed;
   byId("be-note").textContent = data.media.note;
   byId("be-credit").textContent = tr(`画像：${data.credit}`, `Image credit: ${data.credit}`);
-  byId("be-facts").replaceChildren(...data.facts.flatMap(([label, value]) => {
-    const term = document.createElement("dt");
-    const detail = document.createElement("dd");
-    term.textContent = label;
-    detail.textContent = value;
-    return [term, detail];
-  }));
+  fillFacts(byId("be-facts"), data.facts);
   const isSampling = Boolean(data.sampling);
   const screen = byId("big-event");
   screen.classList.toggle("be-sampling", isSampling);
@@ -832,10 +831,7 @@ function hideBigEvent() {
 function fitFrame(spec) {
   const main = byId("be-img");
   if (!main.naturalWidth) return;
-  const ratio = main.naturalWidth / main.naturalHeight;
-  const frame = byId("be-frame");
-  frame.style.aspectRatio = `${main.naturalWidth} / ${main.naturalHeight}`;
-  frame.style.width = `min(100%, calc(50vh * ${ratio}))`;
+  byId("be-frame").style.setProperty("--be-image-ratio", main.naturalWidth / main.naturalHeight);
   byId("be-marker").style.left = `${spec.x}%`;
   byId("be-marker").style.top = `${spec.y}%`;
 }
@@ -1014,6 +1010,8 @@ reset.addEventListener("click", () => {
   mmHeading = null;
   toggleMap(false);
   hideToast();
+  clearTimeout(planSuccessTimer);
+  byId("plan-success").hidden = true;
   hideBigEvent();
   accidentPick.disabled = false;
   start.disabled = false;

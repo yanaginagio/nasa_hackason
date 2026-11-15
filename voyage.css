@@ -82,10 +82,15 @@ body:not([data-scene="voyage"]) .voyage { display: none; }
 .vg-center { position: absolute; inset: 0; display: grid; place-items: center; z-index: 4; }
 .vg-count { font-size: clamp(90px, 18vw, 220px); font-weight: 700; color: #fff; text-shadow: 0 0 30px rgba(255,187,118,.7), 0 4px 12px #000;
   animation: vg-pop .9s ease-out; }
-.vg-count.go { font-size: clamp(56px, 10vw, 130px); color: var(--amber); letter-spacing: .08em; }
+.vg-count.go { font-size: clamp(56px, 10vw, 130px); color: var(--amber); letter-spacing: .08em; animation-name: vg-title-in; }
 @keyframes vg-pop { 0% { transform: scale(1.6); opacity: 0; } 20% { transform: scale(1); opacity: 1; } 100% { transform: scale(.94); opacity: .9; } }
 .vg-caption { position: absolute; top: 22%; left: 50%; transform: translateX(-50%); width: min(820px, 92vw); text-align: center;
   font-size: clamp(20px, 2.6vw, 32px); font-weight: 700; color: #fff; text-shadow: 0 2px 10px #000, 0 0 2px #000; animation: rise .4s ease-out; }
+/* Position the launch caption independently of its fade and the viewport width. */
+.voyage[data-scene="liftoff"] .vg-caption {
+  inset: 0; height: max-content; margin: auto; transform: none; animation: vg-title-in .4s ease-out;
+}
+@keyframes vg-title-in { from { opacity: 0; } to { opacity: 1; } }
 .vg-caption small { display: block; margin-top: 4px; font: 500 clamp(12px, 1.2vw, 15px)/1.5 var(--mono); color: #d8e2cf; }
 .vg-sub { position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%); width: min(900px, 92vw); text-align: center;
   font-size: clamp(16px, 1.7vw, 21px); line-height: 1.5; color: #fff; padding: 6px 14px; border-radius: 8px; background: rgba(0,0,0,.62); }
