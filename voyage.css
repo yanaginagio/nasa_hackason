@@ -19,11 +19,9 @@ body:not([data-scene="voyage"]) .voyage { display: none; }
   z-index: 4; font: 11px var(--mono); color: #eaf0df; background: rgba(0,0,0,.6); padding: 2px 8px; border-radius: 999px; }
 
 /* What the viewer is looking at: NASA footage or AI-made graphics (hackathon rule). */
-.vg-badge { display: inline-block; margin-top: 4px; padding: 2px 9px; border-radius: 999px; font: 600 11px/1.5 var(--mono); text-shadow: none; }
-.vg-badge[data-kind="real"] { background: rgba(111,184,255,.18); color: #cfe6ff; border: 1px solid rgba(111,184,255,.5); }
-.vg-badge[data-kind="ai"] { background: rgba(255,187,118,.2); color: #ffe2c2; border: 1px solid rgba(255,187,118,.6); }
-.vg-badge[data-kind="mix"] { background: rgba(184,249,142,.14); color: #e6ffd6; border: 1px solid rgba(184,249,142,.5); }
-.ai-mark { display: inline-block; margin-right: 4px; padding: 0 6px; border-radius: 4px; font: 700 10px/1.6 var(--mono); color: #141813; background: var(--amber); }
+/* Quiet, always-visible text: enough to read, not enough to distract. */
+.vg-badge { margin-top: 3px; font: 500 10px/1.4 var(--mono); letter-spacing: .04em; color: rgba(234,240,223,.62); text-shadow: 0 1px 2px #000; }
+.voyage[data-scene="title"] .vg-badge { visibility: hidden; }
 .vg-top, .vg-middle, .vg-dock, .vg-center { position: relative; z-index: 3; }
 .vg-middle, .vg-dock, .vg-center { pointer-events: none; }
 .vg-middle > *, .vg-dock > * { pointer-events: auto; }
