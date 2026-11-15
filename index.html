@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Perseveranceの実画像と走行データで遊ぶ火星探査シミュレーション" data-en-content="Explore Mars using real Perseverance imagery and drive data">
   <title data-en="Jezero Traverse | Mars Exploration Simulator">Jezero Traverse | 火星探査シミュレーション</title>
-  <link rel="stylesheet" href="style.css?v=6">
-  <link rel="stylesheet" href="voyage.css?v=3">
+  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="voyage.css?v=4">
   <link rel="stylesheet" href="result.css">
-  <script src="game.js?v=6" type="module"></script>
-  <script src="voyage.js?v=4" type="module"></script>
+  <script src="game.js?v=7" type="module"></script>
+  <script src="voyage.js?v=5" type="module"></script>
 </head>
 <body data-scene="voyage">
   <!-- Prologue: launch, cruise and landing, before the rover drives. -->
@@ -113,6 +113,13 @@
 
   <div class="screen" data-mode="panel" data-ready>
     <img id="photo" class="backdrop" alt="Perseveranceの左Navcamが撮影した火星の地表" data-en-alt="Martian surface captured by Perseverance’s left Navcam">
+
+    <div id="rover-intro" class="rover-intro" hidden>
+      <section class="glass controls rover-intro-card" aria-label="探査シナリオ" data-en-label="Exploration briefing">
+        <p id="rover-intro-text" data-en="Fifteen Martian days (15 sols) have passed since the Perseverance rover landed on Mars. It is now 16:34 LMST (Local Mean Solar Time) at the landing site. Join Perseverance to experience its exploration mission and see what happens on Mars.">火星探査機パーサヴィアランスが火星に着陸してから火星での15日（＝15 sol）が経過しました。現在は火星上での時刻LMSTで16:34。パーサヴィアランスの任務に同行して火星探査任務や火星での出来事を体験させてもらいましょう。</p>
+        <button id="rover-intro-next" type="button" class="primary" aria-label="次へ" data-en-label="Continue" aria-describedby="rover-intro-text"><span aria-hidden="true">▶</span></button>
+      </section>
+    </div>
 
     <header class="topbar">
       <div class="brand"><span class="planet" aria-hidden="true"></span><div>

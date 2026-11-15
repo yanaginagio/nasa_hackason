@@ -983,7 +983,7 @@ document.addEventListener("localechange", showSound);
 
 // Keys: 1-3 choose, M map, Esc close the map, Space pause or resume.
 document.addEventListener("keydown", (event) => {
-  if (document.body.dataset.scene === "voyage") return; // the prologue has its own keys
+  if (document.body.dataset.scene !== "rover") return;
   if (byId("be-result").open) return;
   const typing = ["TEXTAREA", "INPUT", "SELECT"].includes(event.target.tagName);
   if (event.key === "Escape") { toggleMap(false); return; }
