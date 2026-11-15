@@ -1051,7 +1051,7 @@ try {
   const [missionData, accidentData, eventData] = await Promise.all(responses.map((response) => response.json()));
   mission = missionData;
   if (!mission.poses || !mission.drives || !mission.frames.every((frame) => frame.env)) {
-    throw new Error("mission.json lacks environment data; rerun tools/prepare_rover_replay.py");
+    throw new Error("mission.json lacks environment data; see README.md for asset regeneration");
   }
   duration = mission.frames.at(-1).at;
   localizeMission(accidentData, eventData);

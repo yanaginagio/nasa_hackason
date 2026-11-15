@@ -7,10 +7,10 @@ Perseverance の打ち上げ・火星への航行・着陸を NASA の実映像�
 リポジトリのルートで実行し、ブラウザで http://localhost:8417/ を開きます。
 
 ```sh
-python3 -m http.server 8417 --bind 127.0.0.1 --directory rover-replay
+python3 -m http.server 8417 --bind 127.0.0.1
 ```
 
-画像・地図タイル・データは `assets/` に同梱されています。起動後の外部アクセスやAPIキーは不要です。素材の再取得はネット接続のある環境で `python3 tools/prepare_rover_replay.py` を実行します。
+画像・地図タイル・データは `assets/` に同梱されています。起動後の外部アクセスやAPIキーは不要です。素材の再取得用スクリプトは、移動前の[コミットの `tools/`](https://github.com/yanaginagio/nasa_hackason/tree/39522af68d290b9f1cf4d3dca7c7d8f59e0dd0d1/tools)にあります。再取得する場合は、そのコミットを別の作業コピーに展開して、スクリプトを実行します。
 
 ## 物語の流れ
 
@@ -47,7 +47,7 @@ python3 -m http.server 8417 --bind 127.0.0.1 --directory rover-replay
 - 結果画面の紙吹雪と花火、効果音、探査画面の図とアイコンも AI（Claude）が作ったものです。最初の画面・探査画面の下・結果画面に書いています。
 - 写真・映像・録音・データはすべて NASA などの実物で、AI で作り変えてはいません（切り出し・縮小・速度の変更だけ）。
 
-素材の再取得は `python3 tools/prepare_voyage.py --ffmpeg <ffmpeg のパス>` です。`assets/voyage.json` と危険度マップ（`assets/voyage/jezero-hazard-pia23970.jpg`）を作り、NASA の映像から必要な区間だけを切り出して `assets/voyage/*.mp4`（計 14 MB、960×540）を作ります。映像の区間は `tools/prepare_voyage.py` の `CLIPS` にあります。
+移動前の作業コピーで航行素材を再取得するには、`python3 tools/prepare_voyage.py --ffmpeg <ffmpeg のパス>` を実行します。`assets/voyage.json` と危険度マップ（`assets/voyage/jezero-hazard-pia23970.jpg`）を作り、NASA の映像から必要な区間だけを切り出して `assets/voyage/*.mp4`（計 14 MB、960×540）を作ります。映像の区間は `tools/prepare_voyage.py` の `CLIPS` にあります。
 
 ### 結果画面
 
